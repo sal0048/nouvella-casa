@@ -41,7 +41,8 @@ def gen_dxf():
     doc.layers.add(LAYER_LABEL, color=3)
     doc.layers.add(LAYER_REF, color=8)
 
-    for index, placements in enumerate(sheets):
+    for index, sheet in enumerate(sheets):
+        placements = sheet["placements"]
         oy = -index * SHEET_PITCH_Y
 
         msp.add_lwpolyline(
@@ -49,7 +50,7 @@ def gen_dxf():
             format="xy", close=True, dxfattribs={"layer": LAYER_REF},
         )
         msp.add_text(
-            f"SHEET {index + 1}/{len(sheets)}  -  2440 x 1220 x {G.T:.0f} mm PLYWOOD",
+            f"SHEET {index + 1}/{len(sheets)}  -  2440 x 1220  -  {sheet['material']}",
             height=40.0, dxfattribs={"layer": LAYER_REF},
         ).set_placement((0.0, oy + G.SHEET_H + 55.0))
 

@@ -237,10 +237,12 @@ def fill(sheets, instances, gap=G.PART_GAP):
     return queue
 
 
-def build_instances(parts, keys=None, exclude=None):
+def build_instances(parts, keys=None, exclude=None, material=None):
     inst = []
     for part in parts:
-        if keys and part.key not in keys:
+        if material and part.material != material:
+            continue
+        if keys is not None and part.key not in keys:
             continue
         if exclude and part.key in exclude:
             continue
@@ -249,18 +251,37 @@ def build_instances(parts, keys=None, exclude=None):
     return inst
 
 
-def layout():
-    """Nest every part; small stiles fill the offcut space of the big sheets."""
-    parts = G.build_parts()
-    filler = {"STILE"}
-    sheets = pack(build_instances(parts, exclude=filler), collect=True)
-    leftover = fill(sheets, build_instances(parts, keys=filler))
-    if leftover:
-        sheets += pack(leftover, collect=True)
+def _flatten(raw_sheets, material):
     out = []
-    for sheet in sheets:
+    for sheet in raw_sheets:
         placements = []
         for shelf in sheet["shelves"]:
             placements.extend(shelf["items"])
-        out.append(placements)
-    return parts, out
+        out.append({"material": material, "placements": placements})
+    return out
+
+
+def layout():
+    """Nest every part, grouped by material.
+
+    Small backrest stiles are held back and dropped into the offcut space of
+    the structural sheets rather than opening sheets of their own.
+    """
+    parts = G.build_parts()
+    materials = []
+    for part in parts:
+        if part.material not in materials:
+            materials.append(part.material)
+
+    sheets = []
+    for material in materials:
+        filler = {"STILE"} if material == G.PLY15 else set()
+        raw = pack(build_instances(parts, exclude=filler, material=material),
+                   collect=True)
+        if filler:
+            leftover = fill(raw, build_instances(parts, keys=filler,
+                                                 material=material))
+            if leftover:
+                raw += pack(leftover, collect=True)
+        sheets += _flatten(raw, material)
+    return parts, sheets

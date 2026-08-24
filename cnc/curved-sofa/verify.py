@@ -41,7 +41,8 @@ def main() -> int:
                       f"{part.label}: internal loops {i}/{j} do not overlap")
 
     print("\n[2] parts do not overlap on the sheets")
-    for n, placements in enumerate(sheets, 1):
+    for n, sheet in enumerate(sheets, 1):
+        placements = sheet["placements"]
         polys = [(p.label, Polygon(L.flatten_loop(p.loops[0]))) for p in placements]
         bad = 0
         for i in range(len(polys)):
@@ -62,13 +63,16 @@ def main() -> int:
     rib = next(p for p in parts if p.key == "RIB")
     bx = L.loops_bbox(rib.loops)
     check(abs((bx[2] - bx[0]) - G.DEPTH) < 0.01, f"rib radial depth = {bx[2]-bx[0]:.1f} mm (900)")
-    check(abs((bx[3] - bx[1]) - G.BACK_TOP) < 0.01, f"rib height = {bx[3]-bx[1]:.1f} mm (760)")
+    check(abs((bx[3] - bx[1]) - G.BACK_TOP) < 0.01,
+          f"rib height = {bx[3]-bx[1]:.1f} mm ({G.BACK_TOP:.0f} + {G.PLINTH_H:.0f} plinth "
+          f"= {G.BACK_TOP+G.PLINTH_H:.0f} above the floor)")
     width = 2 * G.R_OUT * __import__("math").sin(__import__("math").radians(G.HALF_SWEEP))
     check(abs(width - 2200.0) < 0.5, f"sofa overall width across the back = {width:.0f} mm (2200)")
     depth_plan = G.R_OUT - G.R_IN * __import__("math").cos(
         __import__("math").radians(G.HALF_SWEEP))
     print(f"       plan depth over the crescent = {depth_plan:.0f} mm")
-    print(f"       seat frame top = {G.DECK_TOP:.0f} mm, back top = {G.BACK_TOP:.0f} mm")
+    print(f"       above the floor: seat frame {G.DECK_TOP+G.PLINTH_H:.0f} mm, "
+          f"arm {G.ARM_TOP+G.PLINTH_H:.0f} mm, back {G.BACK_TOP+G.PLINTH_H:.0f} mm")
 
     print("\n[4] built DXF")
     path = Path(__file__).resolve().parent / "out" / "curved-sofa.dxf"
@@ -88,12 +92,19 @@ def main() -> int:
     check(abs(G.SLOT_T - 15.4) < 1e-9, f"every plate slot = {G.SLOT_T} mm for {G.T} mm ply")
     check(G.DOGBONE_R * 2 < G.SLOT_T, f"dogbone relief R{G.DOGBONE_R} fits a {G.SLOT_T} mm slot")
 
-    area = sum(L.part_area(p.loops) * p.qty for p in parts)
-    cutlen = sum(L.cut_length(p.loops) * p.qty for p in parts)
-    print(f"\n[6] material: {area/1e6:.2f} m2 of parts on {len(sheets)} sheets "
-          f"({area/1e6/(len(sheets)*2.44*1.22)*100:.0f}% of sheet area), "
-          f"cut path {cutlen/1000:.0f} m, "
-          f"frame mass ~{area/1e6*G.T/1000*600:.0f} kg at 600 kg/m3")
+    print("\n[6] material")
+    for material in (G.PLY15, G.PLY4):
+        mp = [p for p in parts if p.material == material]
+        if not mp:
+            continue
+        area = sum(L.part_area(p.loops) * p.qty for p in mp)
+        cutlen = sum(L.cut_length(p.loops) * p.qty for p in mp)
+        n = sum(1 for sh in sheets if sh["material"] == material)
+        thick = G.T if material == G.PLY15 else G.SKIN_T
+        print(f"       {material}: {sum(p.qty for p in mp):3d} pieces, "
+              f"{area/1e6:5.2f} m2 on {n} sheets "
+              f"({area/1e6/(n*2.44*1.22)*100:.0f}% used), "
+              f"cut path {cutlen/1000:.0f} m, ~{area/1e6*thick/1000*600:.0f} kg")
 
     print("\nFAILURES:", len(FAIL))
     return 1 if FAIL else 0

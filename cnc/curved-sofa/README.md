@@ -10,8 +10,8 @@ backrest lattice, upholstered afterwards.
 
 | File | What it is |
 |---|---|
-| `out/curved-sofa.dxf` | the cut file — 6 nested sheets, mm, closed profiles |
-| `out/curved-sofa-cutting-plan.pdf` | 8-page shop pack: spec, BOM, plan + section, one page per sheet |
+| `out/curved-sofa.dxf` | the cut file — 8 nested sheets stacked in −Y, mm, closed profiles |
+| `out/curved-sofa-cutting-plan.pdf` | 12-page shop pack: spec + material consumption, plan + section, parts index, foam/fabric schedule, one page per sheet |
 | `out/curved-sofa-preview.png` | 3D flat-pattern preview rendered from the DXF |
 
 ## Key dimensions
@@ -25,18 +25,29 @@ backrest lattice, upholstered afterwards.
 | Seat frame height | 345 mm (≈445 mm with a 100 mm cushion) |
 | Backrest height | 760 mm |
 | Arm height | 620 mm |
-| Material | 15 mm plywood, 2440 × 1220 sheets — 6 sheets |
-| Net part area / frame mass | 5.82 m² / ≈52 kg |
+| Plinth | 45 mm, three laminated base-rail layers |
+| Material | 15 mm plywood ×7 sheets + 4 mm flexible ply ×1 sheet (2440 × 1220) |
+| Net part area / frame mass | 6.42 m² + 2.01 m² / ≈63 kg bare frame |
+| Foam / fabric | ≈272 litres HR foam, ≈9 linear m of 140 cm fabric |
 
-## Parts (33 total)
+## Parts (40 pieces, 18 distinct)
 
-- `RIB` ×7 — radial rib, floor to seat with a back post to 760 mm
-- `ARM-PANEL` ×2 — end panels, slide on tangentially over the rail end tabs
-- `RAIL-BASE-IN` / `RAIL-BASE-OUT` — curved floor rails, the ribs drop onto them
+**15 mm plywood**
+
+- `RIB` ×5 — radial rib, plinth to seat with a back post to 730 mm
+- `ARM-PANEL-IN` ×2 — closes the seat structure at ±23.5°, takes the rail end tabs
+- `ARM-PANEL-OUT` ×2 — the ends of the sofa at ±30°
+- `ARM-CAP` ×2 — horizontal arm top plate spanning both arm panels
+- `RAIL-BASE-IN` ×3 / `RAIL-BASE-OUT` ×3 — laminated into the 45 mm plinth
 - `RAIL-SEAT-IN` / `RAIL-SEAT-OUT` — curved seat rails in open top notches
 - `RAIL-BACK-BOT` / `-MID` / `-TOP` — the three curved backrest rails
 - `SEAT-DECK-1..3` — seat deck sectors, located by tabs on the rib tops
-- `BACK-STILE` ×14 — lattice slats, threaded down through all three back rails
+- `BACK-STILE` ×12 — lattice slats, threaded down through all three back rails
+
+**4 mm flexible plywood** (developed cylinders — they bend onto the frame)
+
+- `SKIN-BASE-OUT`, `SKIN-BASE-IN` — wrap the base
+- `SKIN-BACK` — wraps the outer face of the backrest
 
 ## Layers
 
