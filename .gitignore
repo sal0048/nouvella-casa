@@ -1,0 +1,4 @@
+.venv-cad/
+__pycache__/
+*.pyc
+__cadgen__/
