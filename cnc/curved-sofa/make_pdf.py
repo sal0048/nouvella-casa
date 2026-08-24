@@ -225,10 +225,54 @@ def page_assembly(pdf, parts):
     plt.close(fig)
 
 
+def page_parts_index(pdf, parts, sheets):
+    """One of every distinct part, each fitted to its own cell."""
+    where = {}
+    for n, placements in enumerate(sheets, 1):
+        for pl in placements:
+            where.setdefault(pl.key, set()).add(n)
+
+    total_pieces = sum(p.qty for p in parts)
+    fig = _page(f"3  -  PARTS INDEX  -  {len(parts)} distinct parts, "
+                f"{total_pieces} pieces")
+
+    cols = 5
+    cw, ch = 0.186, 0.256
+    for i, part in enumerate(parts):
+        r, c = divmod(i, cols)
+        ax = fig.add_axes([0.038 + c * cw, 0.645 - r * ch, cw * 0.86, ch * 0.66])
+        ax.set_aspect("equal")
+        ax.axis("off")
+        x0, y0, x1, y1 = L.loops_bbox(part.loops)
+        w, h = x1 - x0, y1 - y0
+        draw_loops(ax, part.loops, offset=(-x0, -y0), lw=0.7)
+        span = max(w, h)
+        ax.set_xlim(w / 2 - span * 0.58, w / 2 + span * 0.58)
+        ax.set_ylim(h / 2 - span * 0.58, h / 2 + span * 0.58)
+        sheet_list = ",".join(str(n) for n in sorted(where.get(part.key, [])))
+        ax.set_title(f"{part.label}   x{part.qty}", fontsize=8.4,
+                     color=INK, fontweight="bold", pad=6)
+        ax.text(0.5, -0.06, f"{w:.0f} x {h:.0f} mm", transform=ax.transAxes,
+                ha="center", va="top", fontsize=7.2, color=REF)
+        ax.text(0.5, -0.145, f"sheet {sheet_list}", transform=ax.transAxes,
+                ha="center", va="top", fontsize=7.2, color=ACCENT)
+
+    fig.text(0.038, 0.058,
+             "Each part is fitted to its own frame, so the drawings are NOT to a "
+             "common scale - read the millimetre size under each one.",
+             fontsize=8, color=REF)
+    fig.text(0.038, 0.042,
+             "Every piece is 15 mm plywood; the sheet number tells you which "
+             "nesting page it is cut from.",
+             fontsize=8, color=REF)
+    pdf.savefig(fig)
+    plt.close(fig)
+
+
 def page_sheet(pdf, index, total, placements):
     counts = Counter(p.label for p in placements)
     note = ", ".join(f"{k} x{v}" for k, v in sorted(counts.items()))
-    fig = _page(f"{index + 2}  -  NESTING SHEET {index + 1} OF {total}", note)
+    fig = _page(f"{index + 4}  -  NESTING SHEET {index + 1} OF {total}", note)
 
     ax = fig.add_axes([0.035, 0.09, 0.93, 0.80])
     ax.set_aspect("equal")
@@ -265,12 +309,13 @@ def main() -> None:
     with PdfPages(out) as pdf:
         page_spec(pdf, parts, sheets)
         page_assembly(pdf, parts)
+        page_parts_index(pdf, parts, sheets)
         for i, placements in enumerate(sheets):
             page_sheet(pdf, i, len(sheets), placements)
         info = pdf.infodict()
         info["Title"] = "Curved 3-seat sofa - CNC cutting plan"
         info["Subject"] = SUBTITLE
-    print(f"wrote {out}  ({2 + len(sheets)} pages)")
+    print(f"wrote {out}  ({3 + len(sheets)} pages)")
 
 
 if __name__ == "__main__":
