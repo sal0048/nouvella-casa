@@ -30,6 +30,10 @@ backrest lattice, upholstered afterwards.
 
 ## Parts (33 total)
 
+Every piece is engraved with its part number, name and instance
+(`01 RIB 3/7`), and the same number is circled on the PDF sheet pages and in
+the bill of materials, so parts can be sorted straight off the bed.
+
 - `RIB` ×7 — radial rib, floor to seat with a back post to 760 mm
 - `ARM-PANEL` ×2 — end panels, slide on tangentially over the rail end tabs
 - `RAIL-BASE-IN` / `RAIL-BASE-OUT` — curved floor rails, the ribs drop onto them
@@ -43,16 +47,29 @@ backrest lattice, upholstered afterwards.
 | Layer | Contents |
 |---|---|
 | `CUT` | every cut contour — outer profiles, slots, lightening holes (all closed) |
-| `ENGRAVE-LABEL` | part identification text |
+| `ENGRAVE-LABEL` | part number + name + instance, placed on the part's own material (4 mm clear of any cut), rotated to fit curved parts |
 | `REFERENCE-SHEET` | 2440 × 1220 sheet outlines and titles — not cut |
 
 ## Machining
 
-Slots are cut at 15.4 mm for 15.0 mm plate and carry dogbone corner relief
-(R3.2, sized for a 6 mm cutter) already in the geometry — apply only the normal
-tool-radius offset on the contour, no extra compensation inside the slots.
-Test one slot on an offcut first; if the sheet measures under 14.6 mm, change
-`FIT` in `sofa_geometry.py` and regenerate.
+All joint dimensions come from one line in `sofa_geometry.py`:
+
+```python
+JOINT = J.JointSpec(t=15.0, fit=0.4, tool_d=6.0)
+```
+
+- `t` — the **measured** sheet thickness (calipers, several spots). "15 mm"
+  plywood is often 14.5–15.2 mm.
+- `fit` — total clearance across a slot: slots are cut at `t + fit` (15.4 mm).
+- `tool_d` — the cutter diameter. Every inside corner gets a relief circle of
+  `tool_d/2 + 0.2` (R3.2) centred on the corner: closed slots **and** the open
+  notches, tab roots and shoulders on the outlines, 62 corners in total.
+  Without it a round bit leaves a fillet in each corner and the mating part
+  stops short of seating.
+
+Apply only the normal tool-radius offset on the contour; the relief is
+already in the geometry. Test one slot on an offcut first, then adjust `t` or
+`fit` and regenerate — `verify.py` re-checks everything.
 
 ## Regenerating
 
@@ -72,6 +89,8 @@ python <dxf-skill>/scripts/gen --validate out/curved-sofa.dxf
 
 ## Source layout
 
+- `joints.py` — `JointSpec` (thickness, fit, cutter) and inside-corner relief
+- `labels.py` — part numbering and on-material engrave-label placement
 - `sofa_geometry.py` — all dimensions and part profiles as named parameters
 - `sofa_layout.py` — arc flattening, areas, and the sheet nesting
 - `curved-sofa.dxf.py` — the `gen_dxf()` entry point the skill CLI builds

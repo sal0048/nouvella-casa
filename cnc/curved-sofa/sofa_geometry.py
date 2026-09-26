@@ -19,14 +19,20 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
+import joints as J
+
 # --------------------------------------------------------------------------
 # Material and global sofa dimensions
 # --------------------------------------------------------------------------
 
-T = 15.0                      # plywood thickness
-FIT = 0.4                     # total slot clearance (slot = T + FIT)
-SLOT_T = T + FIT
-DOGBONE_R = 3.2               # corner relief radius (6 mm cutter + clearance)
+# Measure the real sheet with calipers and set t here; plywood sold as 15 mm
+# is often 14.5-15.2 mm. fit is the total clearance across every slot.
+JOINT = J.JointSpec(t=15.0, fit=0.4, tool_d=6.0)
+
+T = JOINT.t                   # plywood thickness
+FIT = JOINT.fit               # total slot clearance (slot = T + FIT)
+SLOT_T = JOINT.slot_w
+DOGBONE_R = JOINT.relief_r    # corner relief radius (cutter radius + 0.2)
 
 SHEET_W = 2440.0
 SHEET_H = 1220.0
@@ -118,26 +124,10 @@ RAIL_BY_KEY = {r.key: r for r in RAILS}
 
 Loop = list  # list[tuple[float, float, float]]
 
-_DOGBONE_BULGE = math.tan(math.radians(270.0) / 4.0)   # 2.41421356
-
-
 def dogbone_rect(x0: float, y0: float, x1: float, y1: float,
                  r: float = DOGBONE_R) -> Loop:
-    """CCW rectangle with 270-degree dogbone relief at every inside corner."""
-    r = min(r, (x1 - x0) / 2.0 - 0.1, (y1 - y0) / 2.0 - 0.1)
-    if r <= 0.2:
-        return [(x0, y0, 0.0), (x1, y0, 0.0), (x1, y1, 0.0), (x0, y1, 0.0)]
-    corners = [
-        ((x0, y0), (0.0, -1.0), (1.0, 0.0)),
-        ((x1, y0), (1.0, 0.0), (0.0, 1.0)),
-        ((x1, y1), (0.0, 1.0), (-1.0, 0.0)),
-        ((x0, y1), (-1.0, 0.0), (0.0, -1.0)),
-    ]
-    pts: Loop = []
-    for (cx, cy), e1, e2 in corners:
-        pts.append((cx - e1[0] * r, cy - e1[1] * r, _DOGBONE_BULGE))
-        pts.append((cx + e2[0] * r, cy + e2[1] * r, 0.0))
-    return pts
+    """CCW rectangle with dogbone relief at every inside corner."""
+    return J.dogbone_rect(x0, y0, x1, y1, r)
 
 
 def stadium(x0: float, x1: float, yc: float, r: float) -> Loop:
@@ -236,6 +226,8 @@ class Part:
     qty: int
     loops: list = field(default_factory=list)
     note: str = ""
+    num: int = 0              # part number engraved on every piece
+    relieved: int = 0         # concave outline corners given a dogbone
 
 
 def _rib_outline() -> Loop:
@@ -391,4 +383,9 @@ def build_parts() -> list:
                           "rests on ribs + both seat rails"))
     parts.append(Part("STILE", "BACK-STILE", len(STILE_ANGLES), stile_loops(),
                       "threads down through the three back rails"))
+
+    for num, part in enumerate(parts, 1):
+        part.num = num
+        outline, part.relieved = J.relieve_inside_corners(part.loops[0], DOGBONE_R)
+        part.loops = [outline] + part.loops[1:]
     return parts
