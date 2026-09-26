@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Restore the agent tooling this repo's skills rely on, in a fresh cloud
 # container: cadgen (text-to-cad skills) and agent-browser (web automation).
-# Safe to re-run.
+# Pass --blender to also build the Blender venv for photoreal renders
+# (~370 MB; bpy pins numpy < 2, which would break cadgen, so it lives in
+# its own venv at /root/.venvs/blender). Safe to re-run.
 set -euo pipefail
 
 pip install -q "cadgen==0.6.6"
@@ -31,5 +33,11 @@ if [ -f "$BUNDLE" ]; then
   rm -rf "$tmp"
 fi
 
+if [ "${1:-}" = "--blender" ] && [ ! -x /root/.venvs/blender/bin/python ]; then
+  python3 -m venv /root/.venvs/blender
+  /root/.venvs/blender/bin/pip install -q "bpy==5.0.1" shapely ezdxf
+fi
+
 cadgen --version
 agent-browser --version
+[ -x /root/.venvs/blender/bin/python ] && /root/.venvs/blender/bin/python -c "import bpy; print('blender', bpy.app.version_string)" || true

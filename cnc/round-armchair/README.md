@@ -5,14 +5,18 @@ CNC routing from 18 mm MDF, assembled with slot-and-tab joints and glue.
 Joint rules follow the bought Tokyo sofa pack: 19 × 41 mm mortises for 40 mm
 tabs (1 mm clearance), 10 mm between parts, 9 mm clamping edge.
 
-![3D preview](out/round-armchair-3d.png)
+| Frame (Blender, Cycles) | Upholstered (bouclé) |
+|---|---|
+| ![frame](out/round-armchair-frame.png) | ![upholstered](out/round-armchair-upholstered.png) |
 
 ## Deliverables
 
 | File | What it is |
 |---|---|
 | `out/round-armchair.dxf` | cut file — 2 sheets 2440 × 1220 × 18 mm, layers CUT / ENGRAVE-LABEL / REFERENCE-SHEET |
-| `out/round-armchair-3d.png` | assembled frame, front and rear 3/4 |
+| `out/round-armchair-frame.png` | photoreal render of the bare MDF frame, built from the exact cut geometry |
+| `out/round-armchair-upholstered.png` | sales visual: approximate foam + bouclé shell over the frame |
+| `out/round-armchair-3d.png` | quick matplotlib preview, front and rear 3/4 |
 | `out/round-armchair-sheets.png` | the two nested sheets |
 
 ## Size
@@ -50,7 +54,16 @@ bash ../../scripts/setup-tools.sh   # once per container, for the CAD skills
 python build.py        # nest + DXF (~20 s)
 python preview3d.py    # 3D preview
 python verify.py       # joint, relief, nesting and label checks
+
+# photoreal renders (Blender 5, Cycles CPU, ~2 min each)
+bash ../../scripts/setup-tools.sh --blender
+/root/.venvs/blender/bin/python render_blender.py frame
+/root/.venvs/blender/bin/python render_blender.py upholstered
 ```
+
+The upholstered render is a visual for selling and ad testing, not a
+pattern: the foam shell is an approximation wrapped around the frame.
+Change the fabric colour in `material_boucle()` to test variants.
 
 Joint numbers live in `chair_geometry.py` (`JOINT = J.JointSpec(t=18.0,
 fit=1.0, tool_d=6.0)`); measure the real board and adjust `t` before cutting.
