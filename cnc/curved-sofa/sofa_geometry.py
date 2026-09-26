@@ -36,8 +36,8 @@ DOGBONE_R = JOINT.relief_r    # corner relief radius (cutter radius + 0.2)
 
 SHEET_W = 2440.0
 SHEET_H = 1220.0
-SHEET_MARGIN = 15.0
-PART_GAP = 12.0
+SHEET_MARGIN = 10.0              # clamping edge (Tokyo pack: 9 mm)
+PART_GAP = 10.0                  # between parts (Tokyo pack: 10 mm)
 
 R_OUT = 2200.0                # outer (back) face radius in plan
 DEPTH = 900.0                 # radial depth of the sofa band

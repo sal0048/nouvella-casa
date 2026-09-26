@@ -10,7 +10,7 @@ backrest lattice, upholstered afterwards.
 
 | File | What it is |
 |---|---|
-| `out/curved-sofa.dxf` | the cut file — 6 nested sheets, mm, closed profiles |
+| `out/curved-sofa.dxf` | the cut file — 4 nested sheets, mm, closed profiles |
 | `out/curved-sofa-cutting-plan.pdf` | 8-page shop pack: spec, BOM, plan + section, one page per sheet |
 | `out/curved-sofa-preview.png` | 3D flat-pattern preview rendered from the DXF |
 
@@ -25,7 +25,7 @@ backrest lattice, upholstered afterwards.
 | Seat frame height | 345 mm (≈445 mm with a 100 mm cushion) |
 | Backrest height | 760 mm |
 | Arm height | 620 mm |
-| Material | 15 mm plywood, 2440 × 1220 sheets — 6 sheets |
+| Material | 15 mm plywood, 2440 × 1220 sheets — 4 sheets |
 | Net part area / frame mass | 5.82 m² / ≈52 kg |
 
 ## Parts (33 total)
@@ -41,6 +41,17 @@ the bill of materials, so parts can be sorted straight off the bed.
 - `RAIL-BACK-BOT` / `-MID` / `-TOP` — the three curved backrest rails
 - `SEAT-DECK-1..3` — seat deck sectors, located by tabs on the rib tops
 - `BACK-STILE` ×14 — lattice slats, threaded down through all three back rails
+
+## Nesting
+
+Parts are nested by their true shape, not their bounding box: each part is
+rasterised on a 4 mm grid (grown by half the part gap, so masks that do not
+touch are provably ≥ 10 mm apart) and every legal position is found at once
+with an FFT correlation. Sheets are filled one at a time with the largest
+remaining part that fits, small parts drop into ring and lightening-hole
+openings, and a final pass tries to empty the last sheet at 5° rotations.
+Spacing follows the Tokyo pack: 10 mm between parts, 10 mm clamping edge.
+This took the sofa from 6 sheets (bounding-box shelf packing) to 4.
 
 ## Layers
 

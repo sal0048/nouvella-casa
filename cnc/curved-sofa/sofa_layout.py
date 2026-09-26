@@ -119,6 +119,15 @@ def _outline(loops):
     return Polygon(flatten_loop(loops[0]))
 
 
+def _material(loops):
+    """Outline minus internal loops: big openings (ring centres) stay free
+    for other parts; slots vanish once the mask is grown by the gap."""
+    solid = _outline(loops)
+    for hole in loops[1:]:
+        solid = solid.difference(Polygon(flatten_loop(hole)))
+    return solid
+
+
 def _mask(loops, gap):
     """Conservative occupancy mask of a part whose bbox min sits at (0, 0).
 
@@ -126,7 +135,7 @@ def _mask(loops, gap):
     below/left of the part origin.
     """
     pad = gap / 2.0 + RES * math.sqrt(0.5)
-    grown = _outline(loops).buffer(pad, quad_segs=8)
+    grown = _material(loops).buffer(pad, quad_segs=8)
     off = math.ceil(pad / RES)
     x0, y0, x1, y1 = grown.bounds
     nx = math.ceil(x1 / RES) + off

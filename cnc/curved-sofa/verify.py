@@ -44,13 +44,17 @@ def main() -> int:
 
     print("\n[2] parts do not overlap on the sheets")
     for n, placements in enumerate(sheets, 1):
-        polys = [(p.label, Polygon(L.flatten_loop(p.loops[0]))) for p in placements]
+        polys = [(p.label, B.material(p.loops)) for p in placements]
         bad = 0
+        close = 0.0
         for i in range(len(polys)):
             for j in range(i + 1, len(polys)):
                 if polys[i][1].intersects(polys[j][1]):
                     bad += 1
+                close = min(close or 1e9, polys[i][1].distance(polys[j][1]))
         check(bad == 0, f"sheet {n}: {len(placements)} parts, {bad} overlaps")
+        check(close >= G.PART_GAP - 0.05,
+              f"sheet {n}: closest parts {close:.1f} mm apart (>= {G.PART_GAP:.0f})")
         for p in placements:
             inside = (p.x >= G.SHEET_MARGIN - 1e-6
                       and p.y >= G.SHEET_MARGIN - 1e-6
@@ -58,7 +62,7 @@ def main() -> int:
                       and p.y + p.h <= G.SHEET_H - G.SHEET_MARGIN + 1e-6)
             if not inside:
                 check(False, f"sheet {n}: {p.label} {p.instance} outside the margin")
-        check(True, f"sheet {n}: every part inside the 15 mm sheet margin")
+        check(True, f"sheet {n}: every part inside the {G.SHEET_MARGIN:.0f} mm sheet margin")
 
     print("\n[3] requested dimensions")
     rib = next(p for p in parts if p.key == "RIB")
@@ -103,9 +107,12 @@ def main() -> int:
         # of the part; anything the closing adds is material it leaves behind
         solid = B.material(part.loops)
         made = solid.buffer(r_tool, quad_segs=32).buffer(-r_tool, quad_segs=32)
-        left = made.difference(solid).area
-        check(left < 2.0, f"{part.num:02d} {part.label}: a {G.JOINT.tool_d:.0f} mm "
-                          f"cutter leaves {left:.2f} mm2 uncut")
+        # one unrelieved square corner leaves (1 - pi/4) r^2 = 1.93 mm2 by
+        # itself; judge the worst single spot, not the sum of curve-fit noise
+        uncut = made.difference(solid)
+        worst = max((g.area for g in getattr(uncut, "geoms", [uncut])), default=0.0)
+        check(worst < 0.5, f"{part.num:02d} {part.label}: worst spot a "
+                           f"{G.JOINT.tool_d:.0f} mm cutter cannot reach {worst:.2f} mm2")
 
     print("\n[7] engrave labels: one per piece, fully on material")
     labelled = B.all_labels(parts, sheets)
