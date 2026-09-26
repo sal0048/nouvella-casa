@@ -100,8 +100,10 @@ def normalize(p):
         "dimensions_raw": dimension_lines(desc),
         "images": len(p["images"]),
         "main_image": p["images"][0]["src"] if p["images"] else None,
+        "image_urls": " ".join(i["src"] for i in p["images"]),
         "reviews": p["review_count"],
         "short_description": text(p["short_description"]),
+        "description": text(p["description"]),
     }
 
 
