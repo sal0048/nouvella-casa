@@ -1,0 +1,147 @@
+"""Nest the cone table parts per board thickness and write the CNC file.
+
+Layers
+------
+CUT                 through cuts (outlines, ring openings)
+POCKET-KERF-7.5     kerf pockets on the BACK face of the shell, depth
+                    T_SHELL - SKIN, full width = cutter diameter
+ENGRAVE-LABEL       part number + name on the part itself
+REFERENCE-SHEET     sheet outlines, titles and labels for parts too narrow
+                    to engrave (not cut)
+"""
+
+from __future__ import annotations
+
+import math
+import sys
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+sys.path.append(str(HERE.parents[0] / "curved-sofa"))  # shared code, lower priority
+
+import ezdxf
+from ezdxf.enums import TextEntityAlignment
+
+import labels as B
+import sofa_layout as L
+import table_geometry as T
+
+OUT = HERE / "out"
+SHEET_PITCH_Y = T.SHEET_H + 250.0
+KERF_LAYER = f"POCKET-KERF-{T.DEPTH:g}"
+
+
+def layout():
+    """{material: sheets} with every part nested by its true shape."""
+    parts = T.build_parts()
+    groups = {}
+    for mat in sorted({p.material for p in parts}, key=float):
+        sub = [p for p in parts if p.material == mat]
+        groups[mat] = L.nest(L.build_instances(sub), sheet_w=T.SHEET_W,
+                             sheet_h=T.SHEET_H, margin=T.SHEET_MARGIN,
+                             gap=T.PART_GAP)
+    return parts, groups
+
+
+def extend_kerf(rect, by):
+    """Lengthen a kerf rectangle along its long axis so the pocket runs
+    out through both curved edges."""
+    (x0, y0, _), (x1, y1, _), (x2, y2, _), (x3, y3, _) = rect
+    ux, uy = x3 - x0, y3 - y0
+    n = math.hypot(ux, uy)
+    ux, uy = ux / n * by, uy / n * by
+    return [(x0 - ux, y0 - uy), (x1 - ux, y1 - uy), (x2 + ux, y2 + uy), (x3 + ux, y3 + uy)]
+
+
+def split_loops(part, loops):
+    k0 = 1 + part.n_holes
+    return loops[:k0], loops[k0:]
+
+
+def write_dxf(parts, groups, path: Path) -> dict:
+    by_key = {p.key: p for p in parts}
+    doc = ezdxf.new("R2010", setup=True)
+    doc.units = ezdxf.units.MM
+    doc.header["$INSUNITS"] = 4
+    msp = doc.modelspace()
+    doc.layers.add("CUT", color=1)
+    doc.layers.add(KERF_LAYER, color=5)
+    doc.layers.add("ENGRAVE-LABEL", color=3)
+    doc.layers.add("REFERENCE-SHEET", color=8)
+
+    stats = dict(cut=0, kerf=0, engraved=0, reference=0, sheets=0)
+    row = 0
+    for mat, sheets in groups.items():
+        labelled = B.all_labels(parts, sheets)
+        for index, sheet in enumerate(labelled):
+            oy = -row * SHEET_PITCH_Y
+            row += 1
+            stats["sheets"] += 1
+            msp.add_lwpolyline([(0, oy), (T.SHEET_W, oy), (T.SHEET_W, oy + T.SHEET_H),
+                                (0, oy + T.SHEET_H)], format="xy", close=True,
+                               dxfattribs={"layer": "REFERENCE-SHEET"})
+            msp.add_text(f"{mat} mm BOARD - SHEET {index + 1}/{len(sheets)} - 2440 x 1220"
+                         + ("  (kerf side = BACK face, show face down)" if mat == f"{T.T_SHELL:g}" else ""),
+                         height=40.0, dxfattribs={"layer": "REFERENCE-SHEET"}
+                         ).set_placement((0.0, oy + T.SHEET_H + 55.0))
+            for pl, lab in sheet:
+                part = by_key[pl.key]
+                cuts, kerfs = split_loops(part, pl.loops)
+                for loop in cuts:
+                    msp.add_lwpolyline([(x, y + oy, b) for x, y, b in loop], format="xyb",
+                                       close=True, dxfattribs={"layer": "CUT"})
+                    stats["cut"] += 1
+                for rect in kerfs:
+                    msp.add_lwpolyline([(x, y + oy) for x, y in extend_kerf(rect, T.KERF_OVERRUN)],
+                                       format="xy", close=True, dxfattribs={"layer": KERF_LAYER})
+                    stats["kerf"] += 1
+                text = f"{part.num:02d} {part.label}"
+                if lab is not None:
+                    msp.add_text(lab.text, height=lab.height, rotation=lab.angle,
+                                 dxfattribs={"layer": "ENGRAVE-LABEL"}).set_placement(
+                        (lab.x, lab.y + oy), align=TextEntityAlignment.MIDDLE_CENTER)
+                    stats["engraved"] += 1
+                else:
+                    msp.add_text(text + "  (mark by hand)", height=25.0,
+                                 dxfattribs={"layer": "REFERENCE-SHEET"}).set_placement(
+                        (pl.x + pl.w / 2, pl.y + pl.h / 2 + oy),
+                        align=TextEntityAlignment.MIDDLE_CENTER)
+                    stats["reference"] += 1
+    path.parent.mkdir(parents=True, exist_ok=True)
+    doc.saveas(path)
+    return stats
+
+
+def write_part(part, path: Path):
+    """One part, unnested, at the origin (individual_parts/)."""
+    doc = ezdxf.new("R2010", setup=True)
+    doc.units = ezdxf.units.MM
+    doc.header["$INSUNITS"] = 4
+    msp = doc.modelspace()
+    doc.layers.add("CUT", color=1)
+    doc.layers.add(KERF_LAYER, color=5)
+    loops = L.normalise(part.loops)
+    cuts, kerfs = split_loops(part, loops)
+    for loop in cuts:
+        msp.add_lwpolyline(loop, format="xyb", close=True, dxfattribs={"layer": "CUT"})
+    for rect in kerfs:
+        msp.add_lwpolyline(extend_kerf(rect, T.KERF_OVERRUN), format="xy", close=True,
+                           dxfattribs={"layer": KERF_LAYER})
+    path.parent.mkdir(parents=True, exist_ok=True)
+    doc.saveas(path)
+
+
+def main():
+    parts, groups = layout()
+    stats = write_dxf(parts, groups, OUT / "cone-table.dxf")
+    for p in parts + [T.coupon()]:
+        write_part(p, OUT / "parts" / f"P{p.num:02d}_{p.label}_x{p.qty}.dxf")
+    for mat, sheets in groups.items():
+        print(f"{mat} mm: {len(sheets)} sheet(s): "
+              + " | ".join(", ".join(pl.label for pl in s) for s in sheets))
+    print(stats)
+
+
+if __name__ == "__main__":
+    main()
