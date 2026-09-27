@@ -2,6 +2,8 @@
 
     /root/.venvs/blender/bin/python render_blender.py frame      # bare MDF frame
     /root/.venvs/blender/bin/python render_blender.py upholstered
+    /root/.venvs/blender/bin/python render_blender.py exploded
+    /root/.venvs/blender/bin/python render_blender.py export     # OBJ + STL
 
 The frame is built from the exact cut geometry in chair_geometry.py: every
 part becomes an 18 mm extruded curve (openings and mortises included) placed
@@ -19,7 +21,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-sys.path.insert(0, str(HERE.parents[0] / "curved-sofa"))
+sys.path.append(str(HERE.parents[0] / "curved-sofa"))  # shared code, lower priority
 
 import bpy
 
@@ -150,22 +152,55 @@ def plate(name, loops, mat, dx=0.0, dy=0.0):
     return ob
 
 
-def build_frame(mat):
+# exploded view: lift per assembly layer (mm) and push ribs outward
+EXPLODE = {"BASE": 0.0, "BODY": 180.0, "SEAT": 460.0, "BACK": 620.0, "BAND": 900.0}
+EXPLODE_OUT = {"BODY": 90.0, "BACK": 60.0}
+
+
+def build_frame(mat, exploded=False):
+    def lift(key):
+        return EXPLODE[key] if exploded else 0.0
+
+    def push(key, a):
+        if not exploded:
+            return 0.0, 0.0
+        d = EXPLODE_OUT.get(key, 0.0)
+        return d * math.cos(math.radians(a)) * MM, d * math.sin(math.radians(a)) * MM
+
     for p in C.build_parts():
         if p.key in ("BASE", "SEAT") or p.key.startswith("BAND"):
             z = {"BASE": 0.0, "SEAT": C.SEAT_Z}.get(p.key, C.BAND_Z)
-            ob = plate(p.label, p.loops, mat)
-            ob.location.z = (z + C.T / 2) * MM
+            ob = plate(f"P{p.num:02d} {p.label}", p.loops, mat)
+            ob.location.z = (z + C.T / 2 + lift(p.key[:4])) * MM
         elif p.key.startswith("BODY"):
             for a in C.BODY_ANGLES:
                 if C._type_angle(a) == C._type_angle(p.angles[0]):
-                    ob = plate(f"{p.label}@{a:g}", p.loops, mat, dx=C.body_in(a))
+                    ob = plate(f"P{p.num:02d} {p.label} @{a:g}", p.loops, mat, dx=C.body_in(a))
                     ob.rotation_euler = (math.pi / 2, 0.0, math.radians(a))
+                    px, py = push("BODY", a)
+                    ob.location = (px, py, lift("BODY") * MM)
         elif p.key.startswith("BACK"):
             for a in p.angles:
-                ob = plate(f"{p.label}@{a:g}", p.loops, mat,
+                ob = plate(f"P{p.num:02d} {p.label} @{a:g}", p.loops, mat,
                            dx=C.back_in(a) - C.SHOULDER, dy=C.SEAT_Z)
                 ob.rotation_euler = (math.pi / 2, 0.0, math.radians(a))
+                px, py = push("BACK", a)
+                ob.location = (px, py, lift("BACK") * MM)
+
+
+def export_meshes(out_dir: Path):
+    """Assembled frame as OBJ and STL (mm), for viewers and marketplaces."""
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    build_frame(material_wood())
+    for ob in bpy.context.scene.objects:
+        ob.select_set(True)
+        bpy.context.view_layer.objects.active = ob
+    bpy.ops.object.convert(target="MESH")
+    bpy.ops.wm.obj_export(filepath=str(out_dir / "round-armchair.obj"),
+                          global_scale=1000.0, export_materials=True)
+    bpy.ops.wm.stl_export(filepath=str(out_dir / "round-armchair.stl"),
+                          global_scale=1000.0)
+    print(f"wrote {out_dir}/round-armchair.obj, .stl (mm)")
 
 
 # --------------------------------------------------------------------------
@@ -256,6 +291,9 @@ def render(mode: str):
     if mode == "frame":
         build_frame(material_wood())
         camera(-58.0, 22.0, 2.35, 0.38)
+    elif mode == "exploded":
+        build_frame(material_wood(), exploded=True)
+        camera(-58.0, 18.0, 3.3, 0.72)
     else:
         build_upholstery(material_boucle())
         camera(-58.0, 16.0, 2.45, 0.40)
@@ -266,4 +304,8 @@ def render(mode: str):
 
 
 if __name__ == "__main__":
-    render(sys.argv[1] if len(sys.argv) > 1 else "frame")
+    mode = sys.argv[1] if len(sys.argv) > 1 else "frame"
+    if mode == "export":
+        export_meshes(HERE / "out")
+    else:
+        render(mode)

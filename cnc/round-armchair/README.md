@@ -47,6 +47,24 @@ only 12 shapes.
 5. Glue every joint (PVA D3) and staple; webbing across the seat ring,
    then foam and upholstery.
 
+## Product package
+
+`package/ROUND_TUB_ARMCHAIR/` is the sellable bundle: `01_DXF` (full nesting +
+one DXF per part), `02_3D` (STEP exact solids, OBJ, STL), `03_DOCUMENTATION`
+(dimensions, parts list, assembly guide, CNC notes), `04_PREVIEWS`, `05_DATA`
+(`parameters.json` with a provenance status on every value, `parts.json`,
+`validation.json`) and a `README.txt` with the status report and a draft
+sales listing.
+
+The product status is derived, never set by hand: it stays
+`CAD_COMPLETE_NOT_VALIDATED` until the cutter diameter and the measured board
+thickness are confirmed, then `CNC_READY_PENDING_PHYSICAL_TEST` until a
+physical test cut.
+
+Validation = `verify.py` (topology, tab↔mortise, relief, cutter reach,
+nesting, labels, DXF hygiene, scale, feature sizes) + `verify_3d.py` (exact
+solids: no interpenetration, every rib bears on its carrier, overall size).
+
 ## Regenerating
 
 ```bash
@@ -59,6 +77,10 @@ python verify.py       # joint, relief, nesting and label checks
 bash ../../scripts/setup-tools.sh --blender
 /root/.venvs/blender/bin/python render_blender.py frame
 /root/.venvs/blender/bin/python render_blender.py upholstered
+/root/.venvs/blender/bin/python render_blender.py exploded
+/root/.venvs/blender/bin/python render_blender.py export    # OBJ + STL
+python export_step.py                                       # STEP
+python package.py                                           # the bundle (~2 min)
 ```
 
 The upholstered render is a visual for selling and ad testing, not a

@@ -28,7 +28,7 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "curved-sofa"))
+sys.path.append(str(Path(__file__).resolve().parents[1] / "curved-sofa"))  # shared code, lower priority
 
 import joints as J  # noqa: E402
 

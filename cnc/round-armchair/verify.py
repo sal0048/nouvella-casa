@@ -9,7 +9,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-sys.path.insert(0, str(HERE.parents[0] / "curved-sofa"))
+sys.path.append(str(HERE.parents[0] / "curved-sofa"))  # shared code, lower priority
 
 import ezdxf
 from shapely.geometry import Point, Polygon
@@ -21,10 +21,18 @@ import labels as B
 import sofa_layout as L
 
 FAIL = []
+RESULTS = []          # (section, passed, message) for validation.json
+_SECTION = [""]
+
+
+def section(title: str) -> None:
+    _SECTION[0] = title
+    print(f"\n{title}")
 
 
 def check(ok: bool, msg: str) -> None:
     print(("  ok   " if ok else "  FAIL ") + msg)
+    RESULTS.append((_SECTION[0], bool(ok), msg))
     if not ok:
         FAIL.append(msg)
 
@@ -37,7 +45,7 @@ def main() -> int:
     parts, sheets = build.layout()
     by_key = {p.key: p for p in parts}
 
-    print("\n[1] part topology")
+    section("[1] part topology")
     for p in parts:
         polys = [Polygon(L.flatten_loop(l)) for l in p.loops]
         ok = all(q.is_valid for q in polys) and all(polys[0].contains(h) for h in polys[1:])
@@ -46,7 +54,7 @@ def main() -> int:
         check(ok and disjoint, f"{p.num:02d} {p.label}: {len(p.loops)} loops, simple, "
                                f"holes inside and apart")
 
-    print("\n[2] every tab has its mortise (same angle, same radial span)")
+    section("[2] every tab has its mortise (same angle, same radial span)")
     base, seat = by_key["BASE"], by_key["SEAT"]
     base_c, seat_c = mortise_centres(base.loops), mortise_centres(seat.loops)
 
@@ -76,13 +84,13 @@ def main() -> int:
             check(False, f"back rib at {a} deg too short to pass through the band")
     check(True, "every back rib rises at least 20 mm above the band")
 
-    print("\n[3] slot sizes (Tokyo rule: 19 x 41 for 18 mm board)")
+    section("[3] slot sizes (Tokyo rule: 19 x 41 for 18 mm board)")
     check(abs(C.SLOT_T - 19.0) < 1e-9 and abs(C.TAB_SLOT - 41.0) < 1e-9,
           f"mortise {C.TAB_SLOT:.0f} x {C.SLOT_T:.0f} mm for {C.T:.0f} mm board")
     check(C.RELIEF_R > C.JOINT.tool_d / 2, f"relief R{C.RELIEF_R:.1f} clears a "
                                            f"{C.JOINT.tool_d:.0f} mm cutter")
 
-    print("\n[4] corner relief and cutter reach")
+    section("[4] corner relief and cutter reach")
     r_tool = C.JOINT.tool_d / 2.0
     for p in parts:
         _, left = J.relieve_inside_corners(p.loops[0], C.RELIEF_R)
@@ -96,7 +104,7 @@ def main() -> int:
               f"{p.num:02d} {p.label}: {p.relieved} corners relieved, worst spot a "
               f"{C.JOINT.tool_d:.0f} mm bit cannot reach {worst:.2f} mm2")
 
-    print("\n[5] nesting")
+    section("[5] nesting")
     for n_, placements in enumerate(sheets, 1):
         mats = [B.material(p.loops) for p in placements]
         close = min((mats[i].distance(mats[j]) for i in range(len(mats))
@@ -112,7 +120,7 @@ def main() -> int:
     check(all(counts[p.key] == p.qty for p in parts),
           f"every part placed its full quantity ({sum(counts.values())} pieces)")
 
-    print("\n[6] labels")
+    section("[6] labels")
     labelled = B.all_labels(parts, sheets)
     labs = [lab for s in labelled for _, lab in s]
     check(all(lab is not None for lab in labs), f"{len(labs)} pieces labelled")
@@ -120,7 +128,7 @@ def main() -> int:
            if lab and not B.material(p.loops).buffer(-B.EDGE_CLEAR + 0.01).contains(lab.box())]
     check(not bad, f"every label sits on material, {B.EDGE_CLEAR:.0f} mm from any cut")
 
-    print("\n[7] built DXF")
+    section("[7] built DXF")
     path = HERE / "out" / "round-armchair.dxf"
     doc = ezdxf.readfile(path)
     msp = doc.modelspace()
@@ -132,8 +140,42 @@ def main() -> int:
     check(len(msp.query('TEXT[layer=="ENGRAVE-LABEL"]')) == len(labs),
           f"{len(labs)} ENGRAVE-LABEL texts")
 
+    section("[8] DXF hygiene, scale and cutter compatibility")
+    keys = Counter()
+    for e in cut:
+        pts = tuple(round(c, 3) for pt in e.get_points("xyb") for c in pt)
+        keys[pts] += 1
+    dup = sum(n - 1 for n in keys.values() if n > 1)
+    check(dup == 0, f"no duplicate CUT profiles ({dup} found)")
+    # scale 1:1: the widest nested part must match its model width exactly
+    base = by_key["BASE"]
+    bb = L.loops_bbox(base.loops)
+    placed = next(pl for s in sheets for pl in s if pl.key == "BASE")
+    pb = L.loops_bbox(placed.loops)
+    check(abs((pb[2] - pb[0]) - (bb[2] - bb[0])) < 1e-6 or
+          abs((pb[3] - pb[1]) - (bb[2] - bb[0])) < 1e-6,
+          f"scale 1:1 (base ring {bb[2] - bb[0]:.1f} mm in model and in the DXF)")
+    narrow = min(C.SLOT_T, C.TAB_SLOT)
+    check(narrow > C.JOINT.tool_d + 1.0,
+          f"narrowest internal feature {narrow:.0f} mm > {C.JOINT.tool_d:.0f} mm cutter + 1 mm")
+    # material left between each mortise and the ring edges (both sides)
+    webs = []
+    for a in C.BODY_ANGLES:
+        t0, t1 = C.body_tab(a)
+        webs += [t0 - (C.S_BASE * C.R(a) - C.BASE_W), C.S_BASE * C.R(a) - t1,   # base
+                 t0 - (C.S_BASE * C.R(a) - C.RIB_IN - 25.0),                       # seat in
+                 C.S_SEAT * C.R(a) + C.SEAT_LIP - t1]                             # seat out
+    for a in C.BACK_ANGLES:
+        t0, t1 = C.back_tab(a)
+        webs += [C.S_SEAT * C.R(a) + C.SEAT_LIP - t1]
+    web = min(webs) - C.JOINT.fit / 2
+    check(web >= 2 * C.T / 3,
+          f"thinnest ring web beside a mortise {web:.1f} mm (>= {2 * C.T / 3:.0f} mm)")
+    sym = all(C._type_angle(a) == C._type_angle(180 - a) for a in C.BODY_ANGLES)
+    check(sym, "mirrored rib positions share one profile (plan symmetric in X and Y)")
+
     area = sum(L.part_area(p.loops) * p.qty for p in parts)
-    print(f"\n[8] {sum(p.qty for p in parts)} pieces, {len(sheets)} sheets, "
+    print(f"\n[9] {sum(p.qty for p in parts)} pieces, {len(sheets)} sheets, "
           f"{area / 1e6:.2f} m2, frame ~{area / 1e6 * C.T / 1000 * 750:.0f} kg MDF, "
           f"overall {2 * C.A:.0f} x {2 * C.B:.0f} x {C.BACK_TOP:.0f} mm")
     print("\nFAILURES:", len(FAIL))
