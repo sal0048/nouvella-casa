@@ -17,7 +17,7 @@ python3 verify_3d.py          # exact 3D assembly: clashes, bearing, out/cone.st
 
 | # | Part | Role |
 |---|------|------|
-| 01 | SHELL | kerfed skin, whole cone, one piece (42 full + 42 short kerfs) |
+| 01 | SHELL | kerfed skin, whole cone, one piece (42 full + 41 short kerfs, 6 mm wood kept at both seam edges) |
 | 02 | FORMER-BASE | floor disc, 4 mortises for core level 1 |
 | 03 | FORMER-JOINT-LO | caps core level 1 |
 | 04 | FORMER-JOINT-UP | glued on 03, mortises for core level 2 |
