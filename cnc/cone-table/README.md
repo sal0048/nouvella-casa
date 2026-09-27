@@ -42,7 +42,7 @@ cut and bend it before cutting the shell.
 Bent about its skin, the back face must shorten by 2π·d·cos α around the cone
 (d = pocket depth, α = half apex angle), the same at every height, so
 constant-width kerfs along the generatrices close evenly over their length.
-Here 98 mm in total: at most 2.3 mm per kerf.
+Here 94 mm in total: at most 2.2 mm per kerf.
 
 ## Layers
 
