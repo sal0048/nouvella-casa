@@ -8,7 +8,9 @@ base 300), read as cone diameters (confirmed: the NL CNC cone editor takes
 ```
 python3 build.py              # out/cone-table.dxf + out/parts/*.dxf
 python3 build.py --sets 2     # out/cone-table_x2.dxf: two cones nested together
-python3 verify.py             # deterministic checks
+python3 verify.py             # deterministic checks (2D)
+python3 verify_3d.py          # exact 3D assembly: clashes, bearing, out/cone.step
+/root/.venvs/blender/bin/python render_exploded.py   # after exporting out/stl
 /root/.venvs/blender/bin/python render_blender.py hero|section
 ```
 
