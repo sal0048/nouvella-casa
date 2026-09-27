@@ -147,21 +147,26 @@ def kerf_count(s_in: float) -> int:
 
 
 def kerf_layout(s_in: float, s_out: float) -> list:
-    """(angle, r0, r1) of every kerf. n full-length kerfs give KERF_PITCH_MIN
-    at the narrow edge; wherever the pitch has doubled, a shorter kerf is
-    added between each pair, running out to the wide edge, so the pitch
-    stays between KERF_PITCH_MIN and twice that along the whole sector."""
-    n = kerf_count(s_in)
+    """(angle, r0, r1) of every kerf. Full-length kerfs keep KERF_LAND of
+    wood to the seam edges and at most KERF_PITCH_MIN between them at the
+    narrow edge. Wherever the pitch has doubled, a shorter kerf is added
+    midway, running out to the wide edge, so the pitch stays between
+    KERF_PITCH_MIN and twice that along the whole sector."""
     a0 = math.pi / 2 - THETA / 2
-    out = [(a0 + THETA * (k + 0.5) / n, s_in, s_out) for k in range(n)]
-    level = 1
+    edge = (KERF_LAND + TOOL_D / 2) / s_in          # seam strip, as an angle
+    span = THETA - 2 * edge
+    n = math.ceil(span * s_in / KERF_PITCH_MIN) + 1
+    angles = [a0 + edge + span * k / (n - 1) for k in range(n)]
+    out = [(a, s_in, s_out) for a in angles]
+    step = span / (n - 1)
     while True:
-        m = n * 2 ** level
-        s_start = KERF_PITCH_MIN * m / THETA        # pitch of m kerfs = min here
+        s_start = 2 * KERF_PITCH_MIN / step          # halved pitch = min here
         if s_start >= s_out - 2 * KERF_PITCH_MIN:
             break
-        out += [(a0 + THETA * (k + 0.5) / m, s_start, s_out) for k in range(1, m, 2)]
-        level += 1
+        mids = [(a + b) / 2 for a, b in zip(angles, angles[1:])]
+        out += [(a, s_start, s_out) for a in mids]
+        angles = sorted(angles + mids)
+        step /= 2
     return sorted(out)
 
 
@@ -192,7 +197,8 @@ def shell(key, label, za, zb) -> Part:
                 f"cone shell z {za:.0f}-{zb:.0f}, kerfs on the back face",
                 material=f"{T_SHELL:g}", kerfs=n,
                 meta=dict(za=za, zb=zb, s_in=s_in, s_out=s_out, n_kerf=n,
-                          n_full=kerf_count(s_in)))
+                          n_full=sum(1 for _, r0, _ in kerf_layout(s_in, s_out)
+                                     if r0 == s_in)))
 
 
 def former_radius(z0: float, z1: float) -> float:

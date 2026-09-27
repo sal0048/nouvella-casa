@@ -78,6 +78,11 @@ def main() -> int:
         check(min(pitches) - T.TOOL_D >= 4.0,
               f"{p.label}: {m['n_full']} full + {m['n_kerf'] - m['n_full']} short kerfs, "
               f"wood between kerfs {min(pitches) - T.TOOL_D:.1f}-{max(pitches) - T.TOOL_D:.1f} mm")
+        a0 = math.pi / 2 - T.THETA / 2
+        first = min(a for a, _, _ in lay)
+        strip = (first - a0) * m["s_in"] - T.TOOL_D / 2
+        check(strip >= T.KERF_LAND - 0.01, f"{p.label}: {strip:.1f} mm of wood between each "
+                                           f"seam edge and its first kerf (narrow end)")
         note(f"{p.label}: skin {T.SKIN} mm bends at ~R{worst_hinge:.0f} over each kerf at worst "
              f"(strain ~{T.SKIN / 2 / worst_hinge * 100:.1f}%) - confirm with the bend-test coupon")
     check(T.SKIN >= 2.0 and T.DEPTH > 0, f"pocket depth {T.DEPTH:g} mm leaves a "
