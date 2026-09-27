@@ -9,11 +9,12 @@ Construction
 * FORMER-BASE/JOINT-LO/JOINT-UP/TOP  full discs. They carry the core tabs
                         and hold the shell round. JOINT-LO and JOINT-UP are
                         glued face to face at the joint.
-* SHELL-LOW / SHELL-UP  two flat annular sectors of 15 mm board with radial
-                        kerfs pocketed into the BACK face; they roll around
-                        the skeleton into one cone and are glued to the
-                        former edges. They are the skin, not the structure.
-* COLLAR                flat ring outside the joint, hides the seam.
+* SHELL                 one flat annular sector of 18 mm board with radial
+                        kerfs pocketed into the BACK face; it rolls around
+                        the skeleton into the cone and is glued to the
+                        former edges. It is the skin, not the structure.
+                        (ONE_SHELL = False splits it in two at Z_SPLIT with
+                        a COLLAR over the joint, as in the reference video.)
 
 No table top: FORMER-TOP closes the cone flush at the top.
 
@@ -51,10 +52,11 @@ KERF_LAND = 6.0          # wood left between two kerfs at the top edge (NL CNC "
 KERF_PITCH_MIN = TOOL_D + KERF_LAND      # 12 mm pitch at the tightest edge
 KERF_OVERRUN = 3.0       # kerf pocket runs past both curved edges
 
-R_BOT = 150.0            # cone outer radius at the floor (base 300 mm)
-R_TOP = 60.0             # cone outer radius at the top (top 120 mm)
-H_CONE = 400.0           # cone height (base height 400 mm)
-Z_SPLIT = 220.0          # joint between the two shells (collar height)
+R_BOT = 200.0            # cone outer radius at the floor (base 400 mm)
+R_TOP = 80.0             # cone outer radius at the top (top 160 mm = 40% of base, as the post)
+H_CONE = 450.0           # cone height
+Z_SPLIT = 225.0          # mid formers: joint between the two core levels
+ONE_SHELL = True         # one kerfed sector for the whole cone (no seam, no collar)
 
 FIT = 0.5                # radial clearance formers / collar
 COLLAR_W = 30.0
@@ -144,16 +146,35 @@ def kerf_count(s_in: float) -> int:
     return math.ceil(THETA * s_in / KERF_PITCH_MIN)
 
 
-def kerf_rects(s_in: float, s_out: float, n: int, trim: float = 0.5) -> list:
-    """Kerf pockets as rectangles along the generatrices, kept just inside
-    the outline for nesting (build.py extends them by KERF_OVERRUN)."""
+def kerf_layout(s_in: float, s_out: float) -> list:
+    """(angle, r0, r1) of every kerf. n full-length kerfs give KERF_PITCH_MIN
+    at the narrow edge; wherever the pitch has doubled, a shorter kerf is
+    added between each pair, running out to the wide edge, so the pitch
+    stays between KERF_PITCH_MIN and twice that along the whole sector."""
+    n = kerf_count(s_in)
     a0 = math.pi / 2 - THETA / 2
+    out = [(a0 + THETA * (k + 0.5) / n, s_in, s_out) for k in range(n)]
+    level = 1
+    while True:
+        m = n * 2 ** level
+        s_start = KERF_PITCH_MIN * m / THETA        # pitch of m kerfs = min here
+        if s_start >= s_out - 2 * KERF_PITCH_MIN:
+            break
+        out += [(a0 + THETA * (k + 0.5) / m, s_start, s_out) for k in range(1, m, 2)]
+        level += 1
+    return sorted(out)
+
+
+def kerf_rects(s_in: float, s_out: float, trim: float = 0.5) -> list:
+    """Kerf pockets as rectangles along the generatrices, kept just inside
+    the outline for nesting (build.py extends them by KERF_OVERRUN; the
+    short kerfs keep their inner, round-ended stop)."""
     hw = TOOL_D / 2.0
     out = []
-    for k in range(n):
-        a = a0 + THETA * (k + 0.5) / n
+    for a, r0, r1 in kerf_layout(s_in, s_out):
         c, s = math.cos(a), math.sin(a)
-        r0, r1 = s_in + trim + hw, s_out - trim - hw   # corners stay inside
+        r0 = r0 + trim + hw if r0 == s_in else r0
+        r1 = r1 - trim - hw
         nx, ny = -s, c
         out.append([(r0 * c + hw * nx, r0 * s + hw * ny, 0.0),
                     (r0 * c - hw * nx, r0 * s - hw * ny, 0.0),
@@ -164,12 +185,14 @@ def kerf_rects(s_in: float, s_out: float, n: int, trim: float = 0.5) -> list:
 
 def shell(key, label, za, zb) -> Part:
     s_out, s_in = s_of(za), s_of(zb)
-    n = kerf_count(s_in)
-    loops = [sector(s_in, s_out, THETA)] + kerf_rects(s_in, s_out, n)
+    kerfs = kerf_rects(s_in, s_out)
+    n = len(kerfs)
+    loops = [sector(s_in, s_out, THETA)] + kerfs
     return Part(key, label, 1, loops,
                 f"cone shell z {za:.0f}-{zb:.0f}, kerfs on the back face",
                 material=f"{T_SHELL:g}", kerfs=n,
-                meta=dict(za=za, zb=zb, s_in=s_in, s_out=s_out, n_kerf=n))
+                meta=dict(za=za, zb=zb, s_in=s_in, s_out=s_out, n_kerf=n,
+                          n_full=kerf_count(s_in)))
 
 
 def former_radius(z0: float, z1: float) -> float:
@@ -287,15 +310,19 @@ def build_parts() -> list:
                     meta=dict(z0=z0, z1=z1, r=r))
 
     parts = [
-        shell("SHELL1", "SHELL-LOW", 0.0, Z_SPLIT),
-        shell("SHELL2", "SHELL-UP", Z_SPLIT, H_CONE),
         former("FBASE", "FORMER-BASE", rb, 0.0, T_BOARD, "floor disc, core level 1 stands in it"),
         former("FJLO", "FORMER-JOINT-LO", rj_lo, zj0, Z_SPLIT, "caps core level 1"),
         former("FJUP", "FORMER-JOINT-UP", rj_up, Z_SPLIT, zj1, "carries core level 2, glued on JOINT-LO"),
         former("FTOP", "FORMER-TOP", rt, zt0, H_CONE, "closes the cone top, caps core level 2"),
-        Part("COLLAR", "COLLAR", 1, ring(rc + COLLAR_W, rc), "outside, over the joint",
-             n_holes=1, meta=dict(z0=Z_SPLIT - T_BOARD / 2, z1=Z_SPLIT + T_BOARD / 2, r=rc)),
     ] + cores
+    if ONE_SHELL:
+        shells = [shell("SHELL1", "SHELL", 0.0, H_CONE)]
+    else:
+        shells = [shell("SHELL1", "SHELL-LOW", 0.0, Z_SPLIT),
+                  shell("SHELL2", "SHELL-UP", Z_SPLIT, H_CONE)]
+        parts.append(Part("COLLAR", "COLLAR", 1, ring(rc + COLLAR_W, rc), "outside, over the joint",
+                          n_holes=1, meta=dict(z0=Z_SPLIT - T_BOARD / 2, z1=Z_SPLIT + T_BOARD / 2, r=rc)))
+    parts = shells + parts
     for num, p in enumerate(parts, 1):
         p.num = num
         if not p.kerfs:

@@ -48,14 +48,27 @@ def layout(sets: int = 1):
     return parts, groups
 
 
-def extend_kerf(rect, by):
-    """Lengthen a kerf rectangle along its long axis so the pocket runs
-    out through both curved edges."""
+def kerf_len(rect):
+    (x0, y0, _), _, _, (x3, y3, _) = rect
+    return math.hypot(x3 - x0, y3 - y0)
+
+
+def extend_kerf(rect, by, full=True):
+    """Lengthen a kerf rectangle along its long axis so the pocket runs out
+    through the wide edge, and through the narrow edge too if it is a
+    full-length kerf (short in-between kerfs stop inside the part)."""
     (x0, y0, _), (x1, y1, _), (x2, y2, _), (x3, y3, _) = rect
     ux, uy = x3 - x0, y3 - y0
     n = math.hypot(ux, uy)
     ux, uy = ux / n * by, uy / n * by
-    return [(x0 - ux, y0 - uy), (x1 - ux, y1 - uy), (x2 + ux, y2 + uy), (x3 + ux, y3 + uy)]
+    vx, vy = (ux, uy) if full else (0.0, 0.0)
+    return [(x0 - vx, y0 - vy), (x1 - vx, y1 - vy), (x2 + ux, y2 + uy), (x3 + ux, y3 + uy)]
+
+
+def kerf_polys(kerfs, dy=0.0):
+    longest = max((kerf_len(k) for k in kerfs), default=0.0)
+    return [[(x, y + dy) for x, y in extend_kerf(k, T.KERF_OVERRUN, kerf_len(k) > longest - 1.0)]
+            for k in kerfs]
 
 
 def split_loops(part, loops):
@@ -98,9 +111,9 @@ def write_dxf(parts, groups, path: Path, clean: bool = False) -> dict:
                         msp.add_lwpolyline([(x, y + oy, b) for x, y, b in loop], format="xyb",
                                            close=True, dxfattribs={"layer": "CUT"})
                         stats["cut"] += 1
-                    for rect in kerfs:
-                        msp.add_lwpolyline([(x, y + oy) for x, y in extend_kerf(rect, T.KERF_OVERRUN)],
-                                           format="xy", close=True, dxfattribs={"layer": KERF_LAYER})
+                    for poly in kerf_polys(kerfs, oy):
+                        msp.add_lwpolyline(poly, format="xy", close=True,
+                                           dxfattribs={"layer": KERF_LAYER})
                         stats["kerf"] += 1
                 continue
             msp.add_lwpolyline([(0, oy), (T.SHEET_W, oy), (T.SHEET_W, oy + T.SHEET_H),
@@ -117,9 +130,9 @@ def write_dxf(parts, groups, path: Path, clean: bool = False) -> dict:
                     msp.add_lwpolyline([(x, y + oy, b) for x, y, b in loop], format="xyb",
                                        close=True, dxfattribs={"layer": "CUT"})
                     stats["cut"] += 1
-                for rect in kerfs:
-                    msp.add_lwpolyline([(x, y + oy) for x, y in extend_kerf(rect, T.KERF_OVERRUN)],
-                                       format="xy", close=True, dxfattribs={"layer": KERF_LAYER})
+                for poly in kerf_polys(kerfs, oy):
+                    msp.add_lwpolyline(poly, format="xy", close=True,
+                                       dxfattribs={"layer": KERF_LAYER})
                     stats["kerf"] += 1
                 text = f"{part.num:02d} {part.label}"
                 if lab is not None:
@@ -150,9 +163,8 @@ def write_part(part, path: Path):
     cuts, kerfs = split_loops(part, loops)
     for loop in cuts:
         msp.add_lwpolyline(loop, format="xyb", close=True, dxfattribs={"layer": "CUT"})
-    for rect in kerfs:
-        msp.add_lwpolyline(extend_kerf(rect, T.KERF_OVERRUN), format="xy", close=True,
-                           dxfattribs={"layer": KERF_LAYER})
+    for poly in kerf_polys(kerfs):
+        msp.add_lwpolyline(poly, format="xy", close=True, dxfattribs={"layer": KERF_LAYER})
     path.parent.mkdir(parents=True, exist_ok=True)
     doc.saveas(path)
 

@@ -84,7 +84,7 @@ def wall(za, zb):
 def assembly():
     parts = {p.key: p for p in T.build_parts()}
     items = []
-    for k in ("SHELL1", "SHELL2"):
+    for k in [k for k in ("SHELL1", "SHELL2") if k in parts]:
         m = parts[k].meta
         s = wall(m["za"], m["zb"])
         s.label = parts[k].label
@@ -94,11 +94,12 @@ def assembly():
         s = Location((0, 0, p.meta["z0"])) * flat(p.loops, T.T_BOARD)
         s.label = p.label
         items.append(s)
-    c = parts["COLLAR"]
-    z_rest = (T.R_BOT - c.meta["r"]) / (T.R_BOT - T.R_TOP) * T.H_CONE
-    s = Location((0, 0, z_rest)) * flat(c.loops, T.T_BOARD)
-    s.label = c.label
-    items.append(s)
+    if "COLLAR" in parts:
+        c = parts["COLLAR"]
+        z_rest = (T.R_BOT - c.meta["r"]) / (T.R_BOT - T.R_TOP) * T.H_CONE
+        s = Location((0, 0, z_rest)) * flat(c.loops, T.T_BOARD)
+        s.label = c.label
+        items.append(s)
     for p in parts.values():
         if p.key.startswith("CORE"):
             s = plate(p)
@@ -136,13 +137,17 @@ def main():
             ("FORMER-JOINT-UP", "FORMER-JOINT-LO"),
             ("CORE-2A", "FORMER-JOINT-UP"), ("CORE-2B", "FORMER-JOINT-UP"),
             ("CORE-2A", "FORMER-TOP"), ("CORE-2B", "FORMER-TOP"),
-            ("CORE-1A", "CORE-1B"), ("CORE-2A", "CORE-2B"),
-            ("COLLAR", "SHELL-LOW")]
+            ("CORE-1A", "CORE-1B"), ("CORE-2A", "CORE-2B")]
+    if "COLLAR" in by:
+        rows.append(("COLLAR", "SHELL-LOW"))
     for a, b in rows:
         dist = d(a, b)
         check(sec, dist <= TOUCH, f"{a} bears on {b} (gap {dist:.3f} mm)")
-    for f, sh in (("FORMER-BASE", "SHELL-LOW"), ("FORMER-JOINT-LO", "SHELL-LOW"),
-                  ("FORMER-JOINT-UP", "SHELL-UP"), ("FORMER-TOP", "SHELL-UP")):
+    one = "SHELL" in by
+    for f, sh in (("FORMER-BASE", "SHELL" if one else "SHELL-LOW"),
+                  ("FORMER-JOINT-LO", "SHELL" if one else "SHELL-LOW"),
+                  ("FORMER-JOINT-UP", "SHELL" if one else "SHELL-UP"),
+                  ("FORMER-TOP", "SHELL" if one else "SHELL-UP")):
         dist = d(f, sh)
         check(sec, dist <= T.FIT + 0.01, f"{f} holds {sh}: {dist:.2f} mm glue line")
 
@@ -152,7 +157,7 @@ def main():
     check(sec, abs(bb.min.Z) < 1e-6 and abs(bb.max.Z - T.H_CONE) < 1e-6
           and abs(bb.size.X - 2 * T.R_BOT) < 1.0,
           f"cone {bb.size.X:.1f} x {bb.size.Y:.1f} x {bb.size.Z:.1f} mm "
-          f"(collar {2 * (by['COLLAR'].bounding_box().max.X):.0f} mm), standing on z = 0")
+          f", standing on z = 0")
 
     export_step(Compound(children=items), str(HERE / "out" / "cone.step"))
     fails = sum(not r[1] for r in RESULTS)

@@ -97,11 +97,14 @@ def main(mode="hero"):
     floor = material("floor", (0.93, 0.92, 0.90), 0.9)
 
     cut = mode == "section"
-    cone(T.R(0), T.R(T.Z_SPLIT), 0, T.Z_SPLIT, T.T_SHELL, oak, cut)
-    cone(T.R(T.Z_SPLIT), T.R(T.H_CONE), T.Z_SPLIT, T.H_CONE, T.T_SHELL, oak, cut)
     parts = {p.key: p for p in T.build_parts()}
-    c = parts["COLLAR"].meta
-    disc(c["r"] + T.COLLAR_W, c["z0"], c["z1"], white, c["r"])
+    for p in parts.values():
+        if p.kerfs:
+            cone(T.R(p.meta["za"]), T.R(p.meta["zb"]), p.meta["za"], p.meta["zb"],
+                 T.T_SHELL, oak, cut)
+    if "COLLAR" in parts:
+        c = parts["COLLAR"].meta
+        disc(c["r"] + T.COLLAR_W, c["z0"], c["z1"], white, c["r"])
     m = parts["FTOP"].meta
     disc(m["r"], m["z0"], m["z1"], edge)          # visible flush cap
     if cut:

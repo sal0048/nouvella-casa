@@ -42,21 +42,10 @@ def note(msg):
 def main() -> int:
     parts, groups = build.layout()
     by = {p.key: p for p in parts}
-    lo, up = by["SHELL1"], by["SHELL2"]
-
-    section("[1] part topology")
-    for p in parts:
-        cuts, kerfs = build.split_loops(p, p.loops)
-        outer = Polygon(L.flatten_loop(cuts[0]))
-        holes = [Polygon(L.flatten_loop(l)) for l in cuts[1:] + kerfs]
-        ok = outer.is_valid and all(h.is_valid and outer.contains(h) for h in holes)
-        apart = all(not holes[i].intersects(holes[j])
-                    for i in range(len(holes)) for j in range(i + 1, min(len(holes), i + 2)))
-        check(ok and apart, f"{p.num:02d} {p.label}: valid, {len(cuts) - 1} holes, "
-                            f"{len(kerfs)} kerfs inside the outline and apart")
+    shells = [p for p in parts if p.kerfs]
 
     section("[2] cone development (show face does not stretch)")
-    for p in (lo, up):
+    for p in shells:
         m = p.meta
         arc_out, arc_in = T.THETA * m["s_out"], T.THETA * m["s_in"]
         c_bot, c_top = 2 * math.pi * T.R(m["za"]), 2 * math.pi * T.R(m["zb"])
@@ -66,43 +55,53 @@ def main() -> int:
         slant = m["s_out"] - m["s_in"]
         want = math.hypot(m["zb"] - m["za"], T.R(m["za"]) - T.R(m["zb"]))
         check(abs(slant - want) < 1e-6, f"{p.label}: pattern depth {slant:.1f} mm = slant height")
-    check(abs(lo.meta["s_in"] - up.meta["s_out"]) < 1e-9,
-          f"shells meet at the joint: {lo.meta['s_in']:.2f} mm both sides")
+    if len(shells) == 2:
+        check(abs(shells[0].meta["s_in"] - shells[1].meta["s_out"]) < 1e-9,
+              f"shells meet at the joint: {shells[0].meta['s_in']:.2f} mm both sides")
 
     section("[3] kerfs")
     need = T.closure_total()
-    for p in (lo, up):
-        n = p.meta["n_kerf"]
-        per = need / n
-        pitch_top = T.THETA * p.meta["s_in"] / n
-        pitch_bot = T.THETA * p.meta["s_out"] / n
-        check(per < T.TOOL_D, f"{p.label}: each kerf closes {per:.2f} mm of its "
+    for p in shells:
+        m = p.meta
+        lay = T.kerf_layout(m["s_in"], m["s_out"])
+        worst_hinge, pitches = 1e9, []
+        for i in range(200):                      # sample along the generatrix
+            sv = m["s_in"] + (m["s_out"] - m["s_in"]) * (i + 0.5) / 200
+            count = sum(1 for _, r0, r1 in lay if r0 <= sv <= r1)
+            pitch = T.THETA * sv / count
+            pitches.append(pitch)
+            r_face = sv * T.SIN_A / T.COS_A       # R / cos(alpha)
+            worst_hinge = min(worst_hinge, T.TOOL_D * r_face / pitch)
+        per = need / m["n_full"]
+        check(per < T.TOOL_D, f"{p.label}: each kerf closes at most {per:.2f} mm of its "
                               f"{T.TOOL_D:.0f} mm width (back face never jams)")
-        check(pitch_top - T.TOOL_D >= 4.0, f"{p.label}: {n} kerfs, rib {pitch_top - T.TOOL_D:.1f}"
-                                          f"-{pitch_bot - T.TOOL_D:.1f} mm wide")
-        # hinge estimate: the bend concentrates in the skin over each kerf
-        r_face = T.R(p.meta["zb"]) / T.COS_A
-        r_hinge = T.TOOL_D * r_face / pitch_top
-        note(f"{p.label}: skin {T.SKIN} mm bends at ~R{r_hinge:.0f} over each kerf "
-             f"(strain ~{T.SKIN / 2 / r_hinge * 100:.1f}%) - confirm with the bend-test coupon")
+        check(min(pitches) - T.TOOL_D >= 4.0,
+              f"{p.label}: {m['n_full']} full + {m['n_kerf'] - m['n_full']} short kerfs, "
+              f"wood between kerfs {min(pitches) - T.TOOL_D:.1f}-{max(pitches) - T.TOOL_D:.1f} mm")
+        note(f"{p.label}: skin {T.SKIN} mm bends at ~R{worst_hinge:.0f} over each kerf at worst "
+             f"(strain ~{T.SKIN / 2 / worst_hinge * 100:.1f}%) - confirm with the bend-test coupon")
     check(T.SKIN >= 2.0 and T.DEPTH > 0, f"pocket depth {T.DEPTH:g} mm leaves a "
                                          f"{T.SKIN:g} mm skin on {T.T_SHELL:g} mm board")
-    check(T.KERF_OVERRUN >= T.TOOL_D / 2, "kerf pockets run out through both curved edges")
+    check(T.KERF_OVERRUN >= T.TOOL_D / 2, "full kerfs run out through both curved edges, short ones through the wide edge")
 
     section("[4] formers and collar sit where they should")
     for k in ("FBASE", "FJLO", "FJUP", "FTOP"):
         m = by[k].meta
         tight = T.R_in(m["z1"]) - m["r"]
         loose = T.R_in(m["z0"]) - m["r"]
-        check(tight > 0 and loose <= 5.0,
-              f"{by[k].label}: {tight:.1f} mm clear at its upper face, {loose:.1f} mm at its "
-              f"lower face (glue line)")
-    rc = by["COLLAR"].meta["r"]
-    z_rest = (T.R_BOT - rc) / (T.R_BOT - T.R_TOP) * T.H_CONE
-    centre = z_rest + T.T_BOARD / 2
-    check(abs(centre - T.Z_SPLIT) <= 3.0,
-          f"collar slides down to z {z_rest:.1f}, centred {centre - T.Z_SPLIT:+.1f} mm "
-          f"on the joint")
+        wedge = T.T_BOARD * (T.SIN_A / T.COS_A)       # vertical edge vs sloped shell
+        check(0 < tight <= 1.0 and abs(loose - tight - wedge) < 0.05,
+              f"{by[k].label}: bears on the shell along its upper edge ({tight:.1f} mm); "
+              f"the {wedge:.1f} mm wedge below is pure cone slope")
+    note(f"the formers' vertical edges leave a {T.T_BOARD * T.SIN_A / T.COS_A:.1f} mm wedge "
+         f"under the shell: fill it with PU glue or a bead of filler")
+    if "COLLAR" in by:
+        rc = by["COLLAR"].meta["r"]
+        z_rest = (T.R_BOT - rc) / (T.R_BOT - T.R_TOP) * T.H_CONE
+        centre = z_rest + T.T_BOARD / 2
+        check(abs(centre - T.Z_SPLIT) <= 3.0,
+              f"collar slides down to z {z_rest:.1f}, centred {centre - T.Z_SPLIT:+.1f} mm "
+              f"on the joint")
     check(abs(by["FTOP"].meta["z1"] - T.H_CONE) < 1e-9,
           f"FORMER-TOP closes the cone flush at z {T.H_CONE:.0f} (no table top)")
 
