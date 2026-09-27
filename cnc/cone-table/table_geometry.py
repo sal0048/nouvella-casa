@@ -1,18 +1,21 @@
-"""Cone pedestal table - kerf-bent shell, geometry only.
+"""Kerf-bent cone - structural core, formers and shell, geometry only.
 
 Construction
 ------------
-* SHELL-LOW / SHELL-UP  two flat annular sectors of thin board. Radial kerfs
-                        are pocketed into the BACK face, leaving a thin skin
-                        on the show face, so each sector rolls into a cone
-                        frustum. The two frusta stack into one tall cone.
-* FORMER-BASE           full disc inside the cone foot (floor side, ballast).
-* FORMER-JOINT x2       two rings stacked across the joint inside the cone;
-                        each shell glues onto one of them.
-* FORMER-TOP            disc inside the cone top; the sub-top screws to it.
+* CORE-1A/1B, CORE-2A/2B  the structure. In each cone section two 15 mm
+                        plates cross on the axis (half-lap), with tabs top and
+                        bottom into mortises in the formers (Tokyo joints).
+                        Level 2 is turned 45 degrees to level 1.
+* FORMER-BASE/JOINT-LO/JOINT-UP/TOP  full discs. They carry the core tabs
+                        and hold the shell round. JOINT-LO and JOINT-UP are
+                        glued face to face at the joint.
+* SHELL-LOW / SHELL-UP  two flat annular sectors of 15 mm board with radial
+                        kerfs pocketed into the BACK face; they roll around
+                        the skeleton into one cone and are glued to the
+                        former edges. They are the skin, not the structure.
 * COLLAR                flat ring outside the joint, hides the seam.
-* SUB-TOP               disc under the table top, spreads the load.
-* TOP                   the table top.
+
+No table top: FORMER-TOP closes the cone flush at the top.
 
 Why straight, parallel kerfs work on a cone
 -------------------------------------------
@@ -35,12 +38,12 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[1] / "curved-sofa"))  # shared code, lower priority
 
+import joints as J  # noqa: E402
+
 # --------------------------------------------------------------------------
 # Parameters - provenance lives in package.py / parameters.json
 # --------------------------------------------------------------------------
-TOP_D = 500.0            # table top diameter
-SUBTOP_D = 300.0
-T_BOARD = 15.0           # formers, collar, sub-top, top
+T_BOARD = 15.0           # core, formers, collar
 T_SHELL = 15.0           # kerf-bent shell board
 SKIN = 2.5               # material left on the show face under each kerf
 TOOL_D = 6.0             # kerf width = cutter diameter
@@ -48,15 +51,19 @@ KERF_PITCH_MIN = 12.0    # kerf pitch at the tightest (top) edge of a shell
 KERF_OVERRUN = 3.0       # kerf pocket runs past both curved edges
 
 R_BOT = 150.0            # cone outer radius at the floor (base 300 mm)
-R_TOP = 60.0             # cone outer radius under the sub-top (top 120 mm)
+R_TOP = 60.0             # cone outer radius at the top (top 120 mm)
 H_CONE = 400.0           # cone height (base height 400 mm)
-TABLE_H = H_CONE + 2 * T_BOARD          # 430 with sub-top and top
 Z_SPLIT = 220.0          # joint between the two shells (collar height)
 
 FIT = 0.5                # radial clearance formers / collar
-FORMER_RING_W = 35.0     # joint former ring width
 COLLAR_W = 30.0
-BALLAST_KG = 20.0        # steel/concrete on FORMER-BASE
+
+JOINT = J.JointSpec(t=T_BOARD, fit=1.0, tool_d=TOOL_D)   # Tokyo rule: slot t + 1
+TAB_W = 40.0             # core tab length (Tokyo)
+TAB_MIN = 15.0           # shortest tab worth keeping near the narrow top
+TAB_CLEAR = 5.0          # plate material between a tab root relief and the half-lap
+MORTISE_WEB = 5.0        # former material outside a mortise
+CORE_FIT = 1.0           # core plate edge inside the shell
 
 SHEET_W, SHEET_H = 2440.0, 1220.0
 SHEET_MARGIN = 10.0
@@ -170,37 +177,110 @@ def former_radius(z0: float, z1: float) -> float:
     return R_in(max(z0, z1)) - FIT
 
 
+def core_hw(z: float) -> float:
+    """Half width of a core plate at height z (edge follows the shell)."""
+    return R_in(z) - CORE_FIT
+
+
+def tab_spans(r_former: float) -> list:
+    """Tab spans (x0, x1) for a plate edge entering a former of radius
+    r_former: one tab each side of the half-lap slot, clear of the tab-root
+    reliefs and leaving MORTISE_WEB of former outside the mortise."""
+    lo = JOINT.slot_w / 2 + JOINT.relief_r + TAB_CLEAR
+    # the corner reliefs are circles on the mortise corners: their far
+    # point is hypot(end, half width) + r from the former centre
+    reach = r_former - MORTISE_WEB - JOINT.relief_r
+    hi = math.sqrt(reach ** 2 - (JOINT.slot_w / 2) ** 2) - JOINT.fit / 2
+    w = min(TAB_W, hi - lo)
+    if w < TAB_MIN:
+        raise ValueError(f"no room for a tab in a former of radius {r_former:.1f}")
+    c = (lo + hi) / 2
+    return [(-c - w / 2, -c + w / 2), (c - w / 2, c + w / 2)]
+
+
+def core_plate(za: float, zb: float, slot_from_top: bool) -> tuple:
+    """One crossing plate between formers at za (top of the lower former)
+    and zb (bottom of the upper former), drawn in its own plane: x across
+    the cone, y = z. Returns (loop, bottom tab spans, top tab spans)."""
+    hb, ht = core_hw(za), core_hw(zb)
+    bot = tab_spans(former_radius(za - T_BOARD, za))
+    top = tab_spans(former_radius(zb, zb + T_BOARD))
+    zm = (za + zb) / 2
+    sw = JOINT.slot_w / 2
+    pts = [(-hb, za)]
+    for x0, x1 in bot:                       # bottom edge, left to right
+        pts += [(x0, za), (x0, za - T_BOARD), (x1, za - T_BOARD), (x1, za)]
+    if not slot_from_top:
+        pts = pts[:5] + [(-sw, za), (-sw, zm), (sw, zm), (sw, za)] + pts[5:]
+    pts += [(hb, za), (ht, zb)]
+    tops = list(reversed(top))
+    pts += [(tops[0][1], zb), (tops[0][1], zb + T_BOARD), (tops[0][0], zb + T_BOARD),
+            (tops[0][0], zb)]
+    if slot_from_top:
+        pts += [(sw, zb), (sw, zm), (-sw, zm), (-sw, zb)]
+    pts += [(tops[1][1], zb), (tops[1][1], zb + T_BOARD), (tops[1][0], zb + T_BOARD),
+            (tops[1][0], zb), (-ht, zb)]
+    return [(x, y, 0.0) for x, y in pts], bot, top
+
+
+def mortise(x0: float, x1: float, phi: float) -> Loop:
+    """Through mortise in a former for a tab spanning x0..x1 on a plate
+    whose plane is at plan angle phi (deg)."""
+    hx, hy = (x1 - x0 + JOINT.fit) / 2, JOINT.slot_w / 2
+    loop = J.dogbone_rect(-hx, -hy, hx, hy, JOINT.relief_r)
+    xc = (x0 + x1) / 2
+    c, s = math.cos(math.radians(phi)), math.sin(math.radians(phi))
+    return [(xc * c + x * c - y * s, xc * s + x * s + y * c, b) for x, y, b in loop]
+
+
 def build_parts() -> list:
     zj0, zj1 = Z_SPLIT - T_BOARD, Z_SPLIT + T_BOARD
+    zt0 = H_CONE - T_BOARD
     rb = former_radius(0.0, T_BOARD)
     rj_lo = former_radius(zj0, Z_SPLIT)
     rj_up = former_radius(Z_SPLIT, zj1)
-    rt = former_radius(H_CONE - T_BOARD, H_CONE)
+    rt = former_radius(zt0, H_CONE)
     rc = R(Z_SPLIT - T_BOARD / 2) + FIT       # collar bottom face rests here
+
+    # core levels: (za, zb, plan angle of plate A)
+    levels = [(T_BOARD, zj0, 0.0), (zj1, zt0, 45.0)]
+    cores, holes = [], {"FBASE": [], "FJLO": [], "FJUP": [], "FTOP": []}
+    below = {0: "FBASE", 1: "FJUP"}
+    above = {0: "FJLO", 1: "FTOP"}
+    for lv, (za, zb, phi) in enumerate(levels, 1):
+        for tag, from_top, ang in (("A", True, phi), ("B", False, phi + 90.0)):
+            loop, bot, top = core_plate(za, zb, from_top)
+            key = f"CORE{lv}{tag}"
+            cores.append(Part(key, f"CORE-{lv}{tag}", 1, [loop],
+                              f"level {lv}, plane {ang:g} deg, half-lap from "
+                              f"{'top' if from_top else 'bottom'}",
+                              meta=dict(za=za, zb=zb, phi=ang, bot=bot, top=top,
+                                        from_top=from_top)))
+            holes[below[lv - 1]] += [mortise(x0, x1, ang) for x0, x1 in bot]
+            holes[above[lv - 1]] += [mortise(x0, x1, ang) for x0, x1 in top]
+
+    def former(key, label, r, z0, z1, note):
+        h = holes[key]
+        return Part(key, label, 1, [circle(r)] + h, note, n_holes=len(h),
+                    meta=dict(z0=z0, z1=z1, r=r))
+
     parts = [
         shell("SHELL1", "SHELL-LOW", 0.0, Z_SPLIT),
         shell("SHELL2", "SHELL-UP", Z_SPLIT, H_CONE),
-        Part("FBASE", "FORMER-BASE", 1, [circle(rb)], "inside cone foot, z 0-18",
-             meta=dict(z0=0.0, z1=T_BOARD, r=rb)),
-        Part("FJLO", "FORMER-JOINT-LO", 1, ring(rj_lo, rj_lo - FORMER_RING_W),
-             "inside, just below the joint", n_holes=1,
-             meta=dict(z0=zj0, z1=Z_SPLIT, r=rj_lo)),
-        Part("FJUP", "FORMER-JOINT-UP", 1, ring(rj_up, rj_up - FORMER_RING_W),
-             "inside, just above the joint", n_holes=1,
-             meta=dict(z0=Z_SPLIT, z1=zj1, r=rj_up)),
-        Part("FTOP", "FORMER-TOP", 1, [circle(rt)], "inside cone top, sub-top screws in",
-             meta=dict(z0=H_CONE - T_BOARD, z1=H_CONE, r=rt)),
+        former("FBASE", "FORMER-BASE", rb, 0.0, T_BOARD, "floor disc, core level 1 stands in it"),
+        former("FJLO", "FORMER-JOINT-LO", rj_lo, zj0, Z_SPLIT, "caps core level 1"),
+        former("FJUP", "FORMER-JOINT-UP", rj_up, Z_SPLIT, zj1, "carries core level 2, glued on JOINT-LO"),
+        former("FTOP", "FORMER-TOP", rt, zt0, H_CONE, "closes the cone top, caps core level 2"),
         Part("COLLAR", "COLLAR", 1, ring(rc + COLLAR_W, rc), "outside, over the joint",
              n_holes=1, meta=dict(z0=Z_SPLIT - T_BOARD / 2, z1=Z_SPLIT + T_BOARD / 2, r=rc)),
-        Part("SUBTOP", "SUB-TOP", 1, [circle(SUBTOP_D / 2)], "under the top",
-             meta=dict(z0=H_CONE, z1=H_CONE + T_BOARD)),
-        Part("TOP", "TABLE-TOP", 1, [circle(TOP_D / 2)], "table top",
-             meta=dict(z0=H_CONE + T_BOARD, z1=TABLE_H)),
-    ]
+    ] + cores
     for num, p in enumerate(parts, 1):
         p.num = num
         if not p.kerfs:
             p.material = f"{T_BOARD:g}"
+        if p.key.startswith("CORE"):
+            outline, p.relieved = J.relieve_inside_corners(p.loops[0], JOINT.relief_r)
+            p.loops = [outline]
     return parts
 
 

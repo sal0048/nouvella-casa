@@ -13,6 +13,7 @@ import bpy
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+sys.path.append(str(HERE.parents[0] / "curved-sofa"))
 import table_geometry as T  # noqa: E402  (pure python, no numpy needed)
 
 MM = 0.001
@@ -37,7 +38,7 @@ def cone(r0, r1, z0, z1, thick, mat, cut=False):
     sol.thickness = thick * MM
     sol.offset = -1.0                      # grow inward from the show face
     if cut:
-        bpy.ops.mesh.primitive_cube_add(size=2, location=(1, -1, T.TABLE_H * MM / 2))
+        bpy.ops.mesh.primitive_cube_add(size=2, location=(1, -1, T.H_CONE * MM / 2))
         box = bpy.context.object
         box.hide_render = True
         bo = ob.modifiers.new("cut", "BOOLEAN")
@@ -66,6 +67,28 @@ def disc(r_out, z0, z1, mat, r_in=0.0):
     return ob
 
 
+def plate(part, mat):
+    """Extrude a core plate outline (x across, y = z) by the board
+    thickness, standing in its plan-angle plane."""
+    import bmesh
+    import sofa_layout as L
+    pts = L.flatten_loop(part.loops[0], seg_per_arc=8)
+    me = bpy.data.meshes.new(part.label)
+    bm = bmesh.new()
+    verts = [bm.verts.new((x * MM, -T.T_BOARD / 2 * MM, y * MM)) for x, y in pts]
+    face = bm.faces.new(verts)
+    ext = bmesh.ops.extrude_face_region(bm, geom=[face])
+    moved = [v for v in ext["geom"] if isinstance(v, bmesh.types.BMVert)]
+    bmesh.ops.translate(bm, vec=(0, T.T_BOARD * MM, 0), verts=moved)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(me)
+    ob = bpy.data.objects.new(part.label, me)
+    ob.rotation_euler = (0, 0, math.radians(part.meta["phi"]))
+    bpy.context.collection.objects.link(ob)
+    ob.data.materials.append(mat)
+    return ob
+
+
 def main(mode="hero"):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     oak = material("oak", (0.30, 0.16, 0.07), 0.45)
@@ -79,13 +102,16 @@ def main(mode="hero"):
     parts = {p.key: p for p in T.build_parts()}
     c = parts["COLLAR"].meta
     disc(c["r"] + T.COLLAR_W, c["z0"], c["z1"], white, c["r"])
-    disc(T.SUBTOP_D / 2, T.H_CONE, T.H_CONE + T.T_BOARD, edge)
-    disc(T.TOP_D / 2, T.H_CONE + T.T_BOARD, T.TABLE_H, oak)
+    m = parts["FTOP"].meta
+    disc(m["r"], m["z0"], m["z1"], edge)          # visible flush cap
     if cut:
-        for k in ("FBASE", "FJLO", "FJUP", "FTOP"):
+        for k in ("FBASE", "FJLO", "FJUP"):
             m = parts[k].meta
-            disc(m["r"], m["z0"], m["z1"], edge,
-                 m["r"] - T.FORMER_RING_W if k in ("FJLO", "FJUP") else 0.0)
+            disc(m["r"], m["z0"], m["z1"], edge)
+        core = material("core", (0.55, 0.40, 0.25), 0.8)
+        for p in parts.values():
+            if p.key.startswith("CORE"):
+                plate(p, core)
 
     bpy.ops.mesh.primitive_plane_add(size=8, location=(0, 0, 0))
     bpy.context.object.data.materials.append(floor)
@@ -101,10 +127,10 @@ def main(mode="hero"):
     fill.data.size = 3.0
     fill.rotation_euler = (math.radians(60), 0, math.radians(-120))
 
-    k = T.TOP_D / 800.0
+    k = 2.2 * T.R_BOT / 800.0
     bpy.ops.object.camera_add(location=(1.55 * k, -1.95 * k, 1.05 * k))
     cam = bpy.context.object
-    bpy.ops.object.empty_add(location=(0, 0, T.TABLE_H * MM * 0.45))
+    bpy.ops.object.empty_add(location=(0, 0, T.H_CONE * MM * 0.5))
     tgt = bpy.context.object
     tr = cam.constraints.new("TRACK_TO")
     tr.target = tgt

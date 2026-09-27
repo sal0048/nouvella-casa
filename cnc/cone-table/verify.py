@@ -20,7 +20,6 @@ import table_geometry as T
 
 FAIL, RESULTS, NOTES = [], [], []
 _SECTION = [""]
-DENSITY = 750.0          # kg/m3 MDF
 
 
 def section(title):
@@ -104,11 +103,8 @@ def main() -> int:
     check(abs(centre - T.Z_SPLIT) <= 3.0,
           f"collar slides down to z {z_rest:.1f}, centred {centre - T.Z_SPLIT:+.1f} mm "
           f"on the joint")
-    check(T.SUBTOP_D / 2 >= T.R_TOP + 20.0,
-          f"sub-top R{T.SUBTOP_D / 2:.0f} overlaps the cone rim R{T.R_TOP:.0f} by "
-          f"{T.SUBTOP_D / 2 - T.R_TOP:.0f} mm")
-    check(abs(T.H_CONE + 2 * T.T_BOARD - T.TABLE_H) < 1e-9,
-          f"stack: cone {T.H_CONE:.0f} + sub-top + top = {T.TABLE_H:.0f} mm")
+    check(abs(by["FTOP"].meta["z1"] - T.H_CONE) < 1e-9,
+          f"FORMER-TOP closes the cone flush at z {T.H_CONE:.0f} (no table top)")
 
     section("[5] nesting")
     for mat, sheets in groups.items():
@@ -141,19 +137,64 @@ def main() -> int:
         widths.add(round(math.dist(pts[0], pts[1]), 3))
     check(widths == {T.TOOL_D}, f"every kerf is exactly {T.TOOL_D:.0f} mm wide")
 
-    section("[7] stability (tipping with a load on the top edge)")
-    vol = 0.0
-    for p in parts:
-        cuts, _ = build.split_loops(p, p.loops)
-        area = Polygon(L.flatten_loop(cuts[0])).area - sum(
-            Polygon(L.flatten_loop(h)).area for h in cuts[1:])
-        th = T.T_SHELL if p.kerfs else T.T_BOARD
-        vol += area * th * p.qty
-    mass = vol * 1e-9 * DENSITY + T.BALLAST_KG
-    lever = T.TOP_D / 2 - T.R_BOT
-    tip = mass * T.R_BOT / lever
-    check(tip >= 40.0, f"table ~{mass:.1f} kg (ballast {T.BALLAST_KG:g}); tips with {tip:.0f} kg pressed on the top edge "
-                       f"(>= 40 kg)")
+    section("[7] structural core")
+    import joints as J
+    cores = [p for p in parts if p.key.startswith("CORE")]
+    formers = {k: by[k] for k in ("FBASE", "FJLO", "FJUP", "FTOP")}
+    below = {1: "FBASE", 2: "FJUP"}
+    above = {1: "FJLO", 2: "FTOP"}
+    for p in cores:
+        m = p.meta
+        lv = int(p.key[4])
+        gaps = [T.R_in(z) - T.core_hw(z) for z in (m["za"], m["zb"])]
+        check(min(gaps) >= 0.5, f"{p.label}: plate edge {min(gaps):.1f} mm inside the shell "
+                                f"along its whole height (edge follows the cone)")
+        miss = 0
+        for key, spans in ((below[lv], m["bot"]), (above[lv], m["top"])):
+            cents = [Polygon(L.flatten_loop(h)).centroid for h in formers[key].loops[1:]]
+            for x0, x1 in spans:
+                xc = (x0 + x1) / 2
+                c, s_ = math.cos(math.radians(m["phi"])), math.sin(math.radians(m["phi"]))
+                if not any(abs(q.x - xc * c) < 0.05 and abs(q.y - xc * s_) < 0.05 for q in cents):
+                    miss += 1
+        tabs = [x1 - x0 for x0, x1 in m["bot"] + m["top"]]
+        check(miss == 0 and min(tabs) >= T.TAB_MIN,
+              f"{p.label}: 4 tabs ({min(tabs):.1f}-{max(tabs):.1f} mm) each land in a "
+              f"mortise of {below[lv]} / {above[lv]}")
+        solid = B.material(p.loops)
+        r_tool = T.TOOL_D / 2
+        uncut = solid.buffer(r_tool, quad_segs=32).buffer(-r_tool, quad_segs=32).difference(solid)
+        worst = max((g.area for g in getattr(uncut, "geoms", [uncut])), default=0.0)
+        check(p.relieved >= 10 and worst < 0.5,
+              f"{p.label}: {p.relieved} inside corners relieved, worst spot the cutter "
+              f"cannot reach {worst:.2f} mm2")
+    for lv in (1, 2):
+        a_, b_ = by[f"CORE{lv}A"].meta, by[f"CORE{lv}B"].meta
+        check(a_["from_top"] and not b_["from_top"] and abs((a_["phi"] - b_["phi"]) % 180 - 90) < 1e-9,
+              f"level {lv}: plates cross at 90 deg, half-laps meet at mid height "
+              f"({(a_['za'] + a_['zb']) / 2:.0f} mm), slot {T.JOINT.slot_w:g} mm for {T.T_BOARD:g} mm board")
+    for key, f in formers.items():
+        worst = min(f.meta["r"] - max(math.hypot(x, y) for x, y in L.flatten_loop(h))
+                    for h in f.loops[1:])
+        check(worst >= T.MORTISE_WEB - 0.05,
+              f"{f.label}: {len(f.loops) - 1} mortises, thinnest web to the rim {worst:.1f} mm")
+    from shapely.affinity import rotate
+    from shapely.geometry import box
+    from shapely.ops import unary_union
+    holes_lo = unary_union([Polygon(L.flatten_loop(h)) for h in by["FJLO"].loops[1:]])
+    worst = 1.0
+    for k in ("CORE2A", "CORE2B"):
+        m = by[k].meta
+        for x0, x1 in m["bot"]:
+            foot = rotate(box(x0, -T.T_BOARD / 2, x1, T.T_BOARD / 2), m["phi"], origin=(0, 0))
+            worst = min(worst, 1 - foot.intersection(holes_lo).area / foot.area)
+    check(worst >= 0.8, f"level 2 turned 45 deg: every tab end sits >= {worst * 100:.0f}% "
+                        f"on solid JOINT-LO (>= 80%)")
+    # bearing: 150 kg standing on the top, carried by the 4 top tabs of level 2
+    area = sum((x1 - x0) * T.T_BOARD for x0, x1 in by["CORE2A"].meta["top"] + by["CORE2B"].meta["top"])
+    stress = 150 * 9.81 / area
+    check(stress < 3.0, f"150 kg on the top: {stress:.2f} MPa on the core tab ends "
+                        f"(< 3 MPa, conservative for MDF)")
 
     print(f"\nFAILURES: {len(FAIL)}")
     return 1 if FAIL else 0
