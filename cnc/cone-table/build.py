@@ -62,7 +62,9 @@ def split_loops(part, loops):
     return loops[:k0], loops[k0:]
 
 
-def write_dxf(parts, groups, path: Path) -> dict:
+def write_dxf(parts, groups, path: Path, clean: bool = False) -> dict:
+    """clean=True: machine file only - CUT and kerf pockets, no text, no
+    sheet outline (sheets side by side, 100 mm apart)."""
     by_key = {p.key: p for p in parts}
     doc = ezdxf.new("R2010", setup=True)
     doc.units = ezdxf.units.MM
@@ -70,8 +72,9 @@ def write_dxf(parts, groups, path: Path) -> dict:
     msp = doc.modelspace()
     doc.layers.add("CUT", color=1)
     doc.layers.add(KERF_LAYER, color=5)
-    doc.layers.add("ENGRAVE-LABEL", color=3)
-    doc.layers.add("REFERENCE-SHEET", color=8)
+    if not clean:
+        doc.layers.add("ENGRAVE-LABEL", color=3)
+        doc.layers.add("REFERENCE-SHEET", color=8)
 
     stats = dict(cut=0, kerf=0, engraved=0, reference=0, sheets=0)
     row = 0
@@ -81,6 +84,18 @@ def write_dxf(parts, groups, path: Path) -> dict:
             oy = -row * SHEET_PITCH_Y
             row += 1
             stats["sheets"] += 1
+            if clean:
+                for pl, _ in sheet:
+                    cuts, kerfs = split_loops(by_key[pl.key], pl.loops)
+                    for loop in cuts:
+                        msp.add_lwpolyline([(x, y + oy, b) for x, y, b in loop], format="xyb",
+                                           close=True, dxfattribs={"layer": "CUT"})
+                        stats["cut"] += 1
+                    for rect in kerfs:
+                        msp.add_lwpolyline([(x, y + oy) for x, y in extend_kerf(rect, T.KERF_OVERRUN)],
+                                           format="xy", close=True, dxfattribs={"layer": KERF_LAYER})
+                        stats["kerf"] += 1
+                continue
             msp.add_lwpolyline([(0, oy), (T.SHEET_W, oy), (T.SHEET_W, oy + T.SHEET_H),
                                 (0, oy + T.SHEET_H)], format="xy", close=True,
                                dxfattribs={"layer": "REFERENCE-SHEET"})
@@ -140,6 +155,8 @@ def main():
     parts, groups = layout(sets)
     name = "cone-table.dxf" if sets == 1 else f"cone-table_x{sets}.dxf"
     stats = write_dxf(parts, groups, OUT / name)
+    clean = f"CONE_{T.T_SHELL:g}MM_CUT.dxf" if sets == 1 else f"CONE_{T.T_SHELL:g}MM_CUT_x{sets}.dxf"
+    print("clean:", write_dxf(parts, groups, OUT / clean, clean=True))
     if sets == 1:
         for p in parts + [T.coupon()]:
             write_part(p, OUT / "parts" / f"P{p.num:02d}_{p.label}_x{p.qty}.dxf")
