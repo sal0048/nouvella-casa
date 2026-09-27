@@ -2,3 +2,7 @@
 __pycache__/
 *.pyc
 __cadgen__/
+cnc/cone-table/out/anim/
+cnc/cone-table/out/anim_captioned/
+cnc/cone-table/out/anim_preview/
+cnc/cone-table/out/stl_asm/
