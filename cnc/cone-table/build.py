@@ -30,6 +30,7 @@ import table_geometry as T
 OUT = HERE / "out"
 SHEET_PITCH_Y = T.SHEET_H + 250.0
 KERF_LAYER = f"POCKET-KERF-{T.DEPTH:g}"
+BOARD_LAYER = "BOARD-2440x1220"     # sheet frame, reference only (not cut)
 
 
 def layout(sets: int = 1):
@@ -63,15 +64,18 @@ def split_loops(part, loops):
 
 
 def write_dxf(parts, groups, path: Path, clean: bool = False) -> dict:
-    """clean=True: machine file only - CUT and kerf pockets, no text, no
-    sheet outline (sheets side by side, 100 mm apart)."""
+    """clean=True: machine file - CUT, kerf pockets and the board frame on
+    its own layer; no text, no text styles."""
     by_key = {p.key: p for p in parts}
-    doc = ezdxf.new("R2010", setup=True)
+    # clean: no text styles either, so viewers do not ask for fonts
+    doc = ezdxf.new("R2010", setup=not clean)
     doc.units = ezdxf.units.MM
     doc.header["$INSUNITS"] = 4
     msp = doc.modelspace()
     doc.layers.add("CUT", color=1)
     doc.layers.add(KERF_LAYER, color=5)
+    if clean:
+        doc.layers.add(BOARD_LAYER, color=8)
     if not clean:
         doc.layers.add("ENGRAVE-LABEL", color=3)
         doc.layers.add("REFERENCE-SHEET", color=8)
@@ -85,6 +89,9 @@ def write_dxf(parts, groups, path: Path, clean: bool = False) -> dict:
             row += 1
             stats["sheets"] += 1
             if clean:
+                msp.add_lwpolyline([(0, oy), (T.SHEET_W, oy), (T.SHEET_W, oy + T.SHEET_H),
+                                    (0, oy + T.SHEET_H)], format="xy", close=True,
+                                   dxfattribs={"layer": BOARD_LAYER})
                 for pl, _ in sheet:
                     cuts, kerfs = split_loops(by_key[pl.key], pl.loops)
                     for loop in cuts:
