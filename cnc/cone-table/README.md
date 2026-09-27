@@ -2,7 +2,8 @@
 
 Our own parametric model of the kerf-bent cone technique from the workshop
 video. The size follows the published post specs (height 400, top 120,
-base 300, MDF 15), read as cone diameters; the files themselves are ours.
+base 300), read as cone diameters (confirmed: the NL CNC cone editor takes
+"Base — Diameter"), built in MDF 18. The files themselves are ours.
 
 ```
 python3 build.py              # out/cone-table.dxf + out/parts/*.dxf
@@ -11,7 +12,7 @@ python3 verify.py             # deterministic checks
 /root/.venvs/blender/bin/python render_blender.py hero|section
 ```
 
-## Parts (all MDF 15, one 2440 x 1220 sheet)
+## Parts (all MDF 18, one 2440 x 1220 sheet)
 
 | # | Part | Role |
 |---|------|------|
@@ -20,14 +21,16 @@ python3 verify.py             # deterministic checks
 | 03 | FORMER-BASE | floor disc, 4 mortises for core level 1 |
 | 04 | FORMER-JOINT-LO | caps core level 1 |
 | 05 | FORMER-JOINT-UP | glued on 04, 4 mortises for core level 2 |
-| 06 | FORMER-TOP | closes the cone top flush, caps core level 2 |
+| 06 | FORMER-TOP | closes the cone top flush; one ~62 mm centre tab of CORE-2B |
 | 07 | COLLAR | ring over the joint |
 | 08-09 | CORE-1A / 1B | crossing plates (half-lap), level 1, at 0/90 deg |
 | 10-11 | CORE-2A / 2B | crossing plates (half-lap), level 2, at 45/135 deg |
 
 No table top. The load path is core plates -> tabs -> formers -> floor; the
 kerfed shell is the skin. 150 kg standing on the top puts 1.3 MPa on the core
-tab ends.
+tab ends. At the narrow top (83 mm inside) there is no room for a tab each
+side of the half-lap, so CORE-2B gets one centre tab and CORE-2A is locked by
+the half-lap and glued under FORMER-TOP.
 
 Assembly: core 1A x 1B into FORMER-BASE -> FORMER-JOINT-LO on top -> glue
 FORMER-JOINT-UP on it -> core 2A x 2B into it -> FORMER-TOP -> wrap and glue
@@ -42,12 +45,12 @@ cut and bend it before cutting the shells.
 Bent about its skin, the back face must shorten by 2π·d·cos α around the cone
 (d = pocket depth, α = half apex angle), the same at every height, so
 constant-width kerfs along the generatrices close evenly over their length.
-Here 76.6 mm in total: 1.4 mm per kerf on the lower shell, 2.4 mm on the upper.
+Here 95 mm in total: 1.8 mm per kerf on the lower shell, 3.0 mm on the upper.
 
 ## Layers
 
-`CUT` through cuts · `POCKET-KERF-12.5` kerf pockets on the BACK face,
-12.5 mm deep, 6 mm wide, running 3 mm past both curved edges ·
+`CUT` through cuts · `POCKET-KERF-15.5` kerf pockets on the BACK face,
+15.5 mm deep, 6 mm wide, running 3 mm past both curved edges ·
 `ENGRAVE-LABEL` · `REFERENCE-SHEET` (the shells are too finely kerfed to
 engrave: mark by hand).
 
@@ -57,13 +60,13 @@ engrave: mark by hand).
 |-----------|-------|--------|
 | Construction (kerfed cone, formers, collar) | - | FROM_REFERENCE_VIDEO |
 | Cone height / top Ø / base Ø | 400 / 120 / 300 | FROM_PUBLISHED_POST (Ø vs R read from the fan angle) |
-| Board | MDF 15 | FROM_PUBLISHED_POST |
-| Core joints: slot 16, tab 40, 5 mm web | - | ADOPTED_FROM_TOKYO_PACK |
+| Board | MDF 18 | USER_CONFIRMED |
+| Core joints: slot 19, tab 40, 5 mm web | - | ADOPTED_FROM_TOKYO_PACK |
 | No table top | - | USER_CONFIRMED |
 | Joint (collar) height | 220 | DESIGN_CHOICE_UNCONFIRMED |
 | Skin under the kerfs | 2.5 mm | ASSUMED_USER_INPUT_REQUIRED |
 | Cutter Ø (= kerf width) | 6 mm | ASSUMED_USER_INPUT_REQUIRED |
-| Kerf pitch at the top edge | 12 mm | DESIGN_CHOICE_UNCONFIRMED |
+| Kerf land at the top edge (wood between kerfs) | 6 mm -> pitch 12 | MATCHES_NLCNC_DEFAULT ("zig-zag spacing" 6, bit 6) |
 
 ## Status: CAD_COMPLETE_NOT_VALIDATED
 

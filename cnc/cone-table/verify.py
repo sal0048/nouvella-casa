@@ -159,13 +159,13 @@ def main() -> int:
                     miss += 1
         tabs = [x1 - x0 for x0, x1 in m["bot"] + m["top"]]
         check(miss == 0 and min(tabs) >= T.TAB_MIN,
-              f"{p.label}: 4 tabs ({min(tabs):.1f}-{max(tabs):.1f} mm) each land in a "
-              f"mortise of {below[lv]} / {above[lv]}")
+              f"{p.label}: {len(m['bot'])} + {len(m['top'])} tabs ({min(tabs):.1f}-"
+              f"{max(tabs):.1f} mm) each land in a mortise of {below[lv]} / {above[lv]}")
         solid = B.material(p.loops)
         r_tool = T.TOOL_D / 2
         uncut = solid.buffer(r_tool, quad_segs=32).buffer(-r_tool, quad_segs=32).difference(solid)
         worst = max((g.area for g in getattr(uncut, "geoms", [uncut])), default=0.0)
-        check(p.relieved >= 10 and worst < 0.5,
+        check(p.relieved >= 4 and worst < 0.5,
               f"{p.label}: {p.relieved} inside corners relieved, worst spot the cutter "
               f"cannot reach {worst:.2f} mm2")
     for lv in (1, 2):
@@ -190,7 +190,8 @@ def main() -> int:
             worst = min(worst, 1 - foot.intersection(holes_lo).area / foot.area)
     check(worst >= 0.8, f"level 2 turned 45 deg: every tab end sits >= {worst * 100:.0f}% "
                         f"on solid JOINT-LO (>= 80%)")
-    # bearing: 150 kg standing on the top, carried by the 4 top tabs of level 2
+    # bearing: 150 kg standing on the top, carried by the top tabs of level 2
+    # (the untabbed plate's top edge also bears under FORMER-TOP: ignored)
     area = sum((x1 - x0) * T.T_BOARD for x0, x1 in by["CORE2A"].meta["top"] + by["CORE2B"].meta["top"])
     stress = 150 * 9.81 / area
     check(stress < 3.0, f"150 kg on the top: {stress:.2f} MPa on the core tab ends "

@@ -43,11 +43,12 @@ import joints as J  # noqa: E402
 # --------------------------------------------------------------------------
 # Parameters - provenance lives in package.py / parameters.json
 # --------------------------------------------------------------------------
-T_BOARD = 15.0           # core, formers, collar
-T_SHELL = 15.0           # kerf-bent shell board
+T_BOARD = 18.0           # core, formers, collar
+T_SHELL = 18.0           # kerf-bent shell board
 SKIN = 2.5               # material left on the show face under each kerf
 TOOL_D = 6.0             # kerf width = cutter diameter
-KERF_PITCH_MIN = 12.0    # kerf pitch at the tightest (top) edge of a shell
+KERF_LAND = 6.0          # wood left between two kerfs at the top edge (NL CNC "zig-zag spacing")
+KERF_PITCH_MIN = TOOL_D + KERF_LAND      # 12 mm pitch at the tightest edge
 KERF_OVERRUN = 3.0       # kerf pocket runs past both curved edges
 
 R_BOT = 150.0            # cone outer radius at the floor (base 300 mm)
@@ -198,13 +199,33 @@ def tab_spans(r_former: float) -> list:
     return [(-c - w / 2, -c + w / 2), (c - w / 2, c + w / 2)]
 
 
+def centre_tab(r_former: float) -> list:
+    """One tab across the axis, for a former too small for two per side."""
+    reach = r_former - MORTISE_WEB - JOINT.relief_r
+    hi = math.sqrt(reach ** 2 - (JOINT.slot_w / 2) ** 2) - JOINT.fit / 2
+    if 2 * hi < TAB_MIN:
+        raise ValueError(f"no room for a centre tab in a former of radius {r_former:.1f}")
+    return [(-hi, hi)]
+
+
+def top_tabs(r_former: float, slot_from_top: bool) -> list:
+    """Tabs on a plate's top edge. If the former is too small for a tab each
+    side of the half-lap, the plate that is solid at the top (half-lap from
+    the bottom) gets one centre tab and the other plate gets none: it is
+    locked by the half-lap and glued under the former."""
+    try:
+        return tab_spans(r_former)
+    except ValueError:
+        return [] if slot_from_top else centre_tab(r_former)
+
+
 def core_plate(za: float, zb: float, slot_from_top: bool) -> tuple:
     """One crossing plate between formers at za (top of the lower former)
     and zb (bottom of the upper former), drawn in its own plane: x across
     the cone, y = z. Returns (loop, bottom tab spans, top tab spans)."""
     hb, ht = core_hw(za), core_hw(zb)
     bot = tab_spans(former_radius(za - T_BOARD, za))
-    top = tab_spans(former_radius(zb, zb + T_BOARD))
+    top = top_tabs(former_radius(zb, zb + T_BOARD), slot_from_top)
     zm = (za + zb) / 2
     sw = JOINT.slot_w / 2
     pts = [(-hb, za)]
@@ -213,13 +234,14 @@ def core_plate(za: float, zb: float, slot_from_top: bool) -> tuple:
     if not slot_from_top:
         pts = pts[:5] + [(-sw, za), (-sw, zm), (sw, zm), (sw, za)] + pts[5:]
     pts += [(hb, za), (ht, zb)]
-    tops = list(reversed(top))
-    pts += [(tops[0][1], zb), (tops[0][1], zb + T_BOARD), (tops[0][0], zb + T_BOARD),
-            (tops[0][0], zb)]
+    # top edge, right to left: tabs and (plate A) the half-lap slot
+    feats = [(x0, x1, "tab") for x0, x1 in top]
     if slot_from_top:
-        pts += [(sw, zb), (sw, zm), (-sw, zm), (-sw, zb)]
-    pts += [(tops[1][1], zb), (tops[1][1], zb + T_BOARD), (tops[1][0], zb + T_BOARD),
-            (tops[1][0], zb), (-ht, zb)]
+        feats.append((-sw, sw, "slot"))
+    for x0, x1, kind in sorted(feats, key=lambda f: -f[1]):
+        y = zb + T_BOARD if kind == "tab" else zm
+        pts += [(x1, zb), (x1, y), (x0, y), (x0, zb)]
+    pts += [(-ht, zb)]
     return [(x, y, 0.0) for x, y in pts], bot, top
 
 
