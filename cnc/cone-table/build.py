@@ -32,9 +32,12 @@ SHEET_PITCH_Y = T.SHEET_H + 250.0
 KERF_LAYER = f"POCKET-KERF-{T.DEPTH:g}"
 
 
-def layout():
-    """{material: sheets} with every part nested by its true shape."""
+def layout(sets: int = 1):
+    """{material: sheets} with every part nested by its true shape.
+    sets > 1 nests that many complete tables together."""
     parts = T.build_parts()
+    for p in parts:
+        p.qty *= sets
     groups = {}
     for mat in sorted({p.material for p in parts}, key=float):
         sub = [p for p in parts if p.material == mat]
@@ -133,10 +136,13 @@ def write_part(part, path: Path):
 
 
 def main():
-    parts, groups = layout()
-    stats = write_dxf(parts, groups, OUT / "cone-table.dxf")
-    for p in parts + [T.coupon()]:
-        write_part(p, OUT / "parts" / f"P{p.num:02d}_{p.label}_x{p.qty}.dxf")
+    sets = int(sys.argv[sys.argv.index("--sets") + 1]) if "--sets" in sys.argv else 1
+    parts, groups = layout(sets)
+    name = "cone-table.dxf" if sets == 1 else f"cone-table_x{sets}.dxf"
+    stats = write_dxf(parts, groups, OUT / name)
+    if sets == 1:
+        for p in parts + [T.coupon()]:
+            write_part(p, OUT / "parts" / f"P{p.num:02d}_{p.label}_x{p.qty}.dxf")
     for mat, sheets in groups.items():
         print(f"{mat} mm: {len(sheets)} sheet(s): "
               + " | ".join(", ".join(pl.label for pl in s) for s in sheets))

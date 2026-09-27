@@ -147,14 +147,13 @@ def main() -> int:
         cuts, _ = build.split_loops(p, p.loops)
         area = Polygon(L.flatten_loop(cuts[0])).area - sum(
             Polygon(L.flatten_loop(h)).area for h in cuts[1:])
-        th = T.T_SHELL if p.material == f"{T.T_SHELL:g}" else T.T_BOARD
+        th = T.T_SHELL if p.kerfs else T.T_BOARD
         vol += area * th * p.qty
-    mass = vol * 1e-9 * DENSITY
+    mass = vol * 1e-9 * DENSITY + T.BALLAST_KG
     lever = T.TOP_D / 2 - T.R_BOT
     tip = mass * T.R_BOT / lever
-    check(tip >= 40.0, f"table ~{mass:.1f} kg; tips with {tip:.0f} kg pressed on the top edge "
+    check(tip >= 40.0, f"table ~{mass:.1f} kg (ballast {T.BALLAST_KG:g}); tips with {tip:.0f} kg pressed on the top edge "
                        f"(>= 40 kg)")
-    note("add 5-10 kg ballast on FORMER-BASE if the table will be leaned on")
 
     print(f"\nFAILURES: {len(FAIL)}")
     return 1 if FAIL else 0

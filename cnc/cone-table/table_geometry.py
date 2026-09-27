@@ -38,25 +38,25 @@ sys.path.append(str(Path(__file__).resolve().parents[1] / "curved-sofa"))  # sha
 # --------------------------------------------------------------------------
 # Parameters - provenance lives in package.py / parameters.json
 # --------------------------------------------------------------------------
-TABLE_H = 750.0          # floor to top surface
-TOP_D = 800.0            # table top diameter
-SUBTOP_D = 500.0
-T_BOARD = 18.0           # formers, collar, sub-top, top
-T_SHELL = 10.0           # kerf-bent shell board
+TOP_D = 500.0            # table top diameter
+SUBTOP_D = 300.0
+T_BOARD = 15.0           # formers, collar, sub-top, top
+T_SHELL = 15.0           # kerf-bent shell board
 SKIN = 2.5               # material left on the show face under each kerf
 TOOL_D = 6.0             # kerf width = cutter diameter
 KERF_PITCH_MIN = 12.0    # kerf pitch at the tightest (top) edge of a shell
 KERF_OVERRUN = 3.0       # kerf pocket runs past both curved edges
 
-R_BOT = 300.0            # cone outer radius at the floor
-R_TOP = 150.0            # cone outer radius under the sub-top
-H_CONE = TABLE_H - 2 * T_BOARD          # 714
-Z_SPLIT = 400.0          # joint between the two shells (collar height)
+R_BOT = 150.0            # cone outer radius at the floor (base 300 mm)
+R_TOP = 60.0             # cone outer radius under the sub-top (top 120 mm)
+H_CONE = 400.0           # cone height (base height 400 mm)
+TABLE_H = H_CONE + 2 * T_BOARD          # 430 with sub-top and top
+Z_SPLIT = 220.0          # joint between the two shells (collar height)
 
 FIT = 0.5                # radial clearance formers / collar
-FORMER_RING_W = 60.0     # joint former ring width
-COLLAR_W = 40.0
-SEAM_GAP = 0.0           # sectors are developed exactly; glue line only
+FORMER_RING_W = 35.0     # joint former ring width
+COLLAR_W = 30.0
+BALLAST_KG = 20.0        # steel/concrete on FORMER-BASE
 
 SHEET_W, SHEET_H = 2440.0, 1220.0
 SHEET_MARGIN = 10.0
@@ -105,7 +105,7 @@ class Part:
     qty: int
     loops: list = field(default_factory=list)   # [outline, holes..., kerfs...]
     note: str = ""
-    material: str = "18"                         # "18" or "10" (sheet group)
+    material: str = ""                           # board thickness, groups the sheets
     n_holes: int = 0                             # loops[1:1+n_holes] are through holes
     kerfs: int = 0                               # loops[1+n_holes:] are kerf pockets
     num: int = 0
@@ -199,6 +199,8 @@ def build_parts() -> list:
     ]
     for num, p in enumerate(parts, 1):
         p.num = num
+        if not p.kerfs:
+            p.material = f"{T_BOARD:g}"
     return parts
 
 

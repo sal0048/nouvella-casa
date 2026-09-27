@@ -37,7 +37,7 @@ def cone(r0, r1, z0, z1, thick, mat, cut=False):
     sol.thickness = thick * MM
     sol.offset = -1.0                      # grow inward from the show face
     if cut:
-        bpy.ops.mesh.primitive_cube_add(size=2, location=(1, -1, 0.4))
+        bpy.ops.mesh.primitive_cube_add(size=2, location=(1, -1, T.TABLE_H * MM / 2))
         box = bpy.context.object
         box.hide_render = True
         bo = ob.modifiers.new("cut", "BOOLEAN")
@@ -68,8 +68,8 @@ def disc(r_out, z0, z1, mat, r_in=0.0):
 
 def main(mode="hero"):
     bpy.ops.wm.read_factory_settings(use_empty=True)
-    oak = material("oak", (0.62, 0.43, 0.26), 0.45)
-    edge = material("mdf_edge", (0.78, 0.66, 0.50), 0.8)
+    oak = material("oak", (0.30, 0.16, 0.07), 0.45)
+    edge = material("mdf_edge", (0.45, 0.33, 0.20), 0.8)
     white = material("collar", (0.86, 0.85, 0.82), 0.5)
     floor = material("floor", (0.93, 0.92, 0.90), 0.9)
 
@@ -101,9 +101,10 @@ def main(mode="hero"):
     fill.data.size = 3.0
     fill.rotation_euler = (math.radians(60), 0, math.radians(-120))
 
-    bpy.ops.object.camera_add(location=(1.55, -1.95, 1.05))
+    k = T.TOP_D / 800.0
+    bpy.ops.object.camera_add(location=(1.55 * k, -1.95 * k, 1.05 * k))
     cam = bpy.context.object
-    bpy.ops.object.empty_add(location=(0, 0, 0.38))
+    bpy.ops.object.empty_add(location=(0, 0, T.TABLE_H * MM * 0.45))
     tgt = bpy.context.object
     tr = cam.constraints.new("TRACK_TO")
     tr.target = tgt
