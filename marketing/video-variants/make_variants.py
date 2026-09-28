@@ -1,6 +1,6 @@
 """Brand + hook variants of one vertical video (A/B test the hook only).
 
-    python3 make_variants.py <input.mp4> [--count N]
+    python3 make_variants.py <input.mp4> [--count N] [--music-from SECONDS]
 
 For every hook: the Nouvella Casa badge sits over the bottom-right corner
 (where the generator's mark is), the hook shows for the first 3 s at the top,
@@ -149,6 +149,19 @@ def main():
     badge(W, H).save(tmp / "badge.png")
     cta(W, H).save(tmp / "cta.png")
     t_end = max(0.0, dur - 2.5)
+    # --music-from S: the source is silent before S; loop its music [S, S+10]
+    # with a crossfade so music plays over the whole video
+    music = None
+    if "--music-from" in sys.argv:
+        s0 = float(sys.argv[sys.argv.index("--music-from") + 1])
+        seg, music = tmp / "music_seg.wav", tmp / "music_full.wav"
+        subprocess.run([FF, "-y", "-v", "error", "-ss", str(s0), "-t", str(dur - s0),
+                        "-i", str(src), "-vn", "-c:a", "pcm_s16le", str(seg)], check=True)
+        subprocess.run([FF, "-y", "-v", "error", "-i", str(seg), "-i", str(seg),
+                        "-filter_complex",
+                        f"[0:a][1:a]acrossfade=d=0.6:c1=tri:c2=tri,apad=whole_dur={dur:.3f},"
+                        f"afade=t=in:d=0.3,afade=t=out:st={dur - 1:.2f}:d=1.0[a]",
+                        "-map", "[a]", "-c:a", "pcm_s16le", str(music)], check=True)
     made = []
     for k, hook in enumerate(HOOKS[:count], 1):
         rtl_block(W, H, hook, 300, 64).save(tmp / f"hook_{k:02d}.png")
@@ -156,13 +169,14 @@ def main():
         flt = ("[0:v][1:v]overlay=0:0[a];"
                "[a][2:v]overlay=0:0:enable='lt(t,3)'[b];"
                f"[b][3:v]overlay=0:0:enable='gte(t,{t_end:.2f})'[v]")
+        audio_in = ["-i", str(music)] if music else []
         subprocess.run([FF, "-y", "-v", "error", "-i", str(src),
                         "-loop", "1", "-i", str(tmp / "badge.png"),
                         "-loop", "1", "-i", str(tmp / f"hook_{k:02d}.png"),
-                        "-loop", "1", "-i", str(tmp / "cta.png"),
-                        "-filter_complex", flt, "-map", "[v]", "-map", "0:a?",
+                        "-loop", "1", "-i", str(tmp / "cta.png"), *audio_in,
+                        "-filter_complex", flt, "-map", "[v]", "-map", "4:a" if music else "0:a?",
                         "-t", f"{dur:.3f}", "-c:v", "libx264", "-crf", "24", "-preset", "medium",
-                        "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart",
+                        "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart",
                         str(dst)], check=True)
         made.append({"file": dst.name, "hook": hook})
         print(dst.name, dst.stat().st_size)
