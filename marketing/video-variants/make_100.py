@@ -1,4 +1,4 @@
-"""100 reels = 10 hooks x 10 visual treatments, scheduled 10 per day.
+"""100 reels = 10 selling angles (one hook each) x 10 visual treatments, scheduled 10 per day.
 
     python3 make_100.py <input.mp4> [--music-from SECONDS] [--jobs N] [--day D]
 
@@ -43,17 +43,33 @@ TREATMENTS = [
 ]
 
 # openers follow the hook's angle; bodies change by day; closers rotate
+# one hook per selling angle (the price angles never quote a number: the
+# price is given in DM)
+ANGLES = [
+    ("luxury", "طاولة قهوة كيما تاع الفنادق… في دارك"),
+    ("price-value", "لوك تاع الفنادق… بسعر معقول"),
+    ("unique", "طاولة ماشي كيما الطاولات"),
+    ("social-proof", "هاذي الطاولة يسقسيو عليها كامل الضياف"),
+    ("craft-cnc", "القاعدة؟ خشب مقطوع بالـ CNC"),
+    ("cheap-makeover", "بدّل لوك الصالون بقطعة وحدة، بلا ما تخسر بزاف"),
+    ("workshop-direct", "من الورشة تاعنا لدارك، بلا وسيط"),
+    ("price-compare", "علاش تخلص الماركة؟ نفس الستيل بسعر معقول"),
+    ("curiosity", "وقف! شوف القاعدة تاع هاذ الطاولة"),
+    ("problem", "صالونك باين فارغ؟ هاذي هي القطعة الناقصة"),
+]
+M.HOOKS = [h for _, h in ANGLES]
+
 OPENERS = [
     "طاولة قهوة بستيل الفنادق، ولكن في دارك.",
-    "الصالون ساعات يكون ناقصو قطعة وحدة برك.",
+    "لوك فخم ما يحتاجش ميزانية فخمة.",
     "ماشي طاولة عادية: القاعدة هي لي تحكي.",
     "القطعة لي كل ضيف يسقسي عليها.",
     "القاعدة خدمة CNC بالمقاس، خشب مقطوع بدقة.",
-    "تبدل روح الصالون بلا ما تبدل كلش.",
-    "من الورشة تاعنا، مباشرة لدارك.",
-    "شكل مدور، خطوط نظيفة، وصنعة محلية.",
+    "تبدل روح الصالون بقطعة وحدة، بلا ما تبدل كلش.",
+    "من الورشة تاعنا مباشرة لدارك، بلا وسيط بيناتنا.",
+    "نفس الستيل لي تشوفو عند الماركات، بسعر معقول.",
     "ركز في القاعدة… هنا الفرق.",
-    "إذا عجبتك، قولها في التعليقات.",
+    "إذا الصالون باين فارغ، ساعات تنقصو قطعة وحدة برك.",
 ]
 BODIES = [
     "تصميم يزيد الدفا للصالون ويخلي العين تحبس عليه.",
@@ -155,7 +171,7 @@ def render(src, dur, W, H, bed, day, hook):
                     "-threads", "2", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k",
                     "-movflags", "+faststart", str(dst)], check=True)
     return {"id": tag, "file": dst.name, "day": day + 1, "slot": hook + 1,
-            "hook": M.HOOKS[hook], "treatment": name, "duration": round(out_dur, 2),
+            "angle": ANGLES[hook][0], "hook": M.HOOKS[hook], "treatment": name, "duration": round(out_dur, 2),
             "caption": caption(hook, day), "status": "ready"}
 
 
@@ -176,7 +192,9 @@ def main():
         badge_at(W, H, *mark_after(W, H, t[2], t[3]))
     man_path = OUT / "manifest.json"
     manifest = {r["id"]: r for r in json.loads(man_path.read_text())} if man_path.exists() else {}
-    todo = [(d, h) for d in days for h in range(10)]
+    pub_path = OUT / "published.json"
+    published = json.loads(pub_path.read_text()) if pub_path.exists() else {}
+    todo = [(d, h) for d in days for h in range(10) if f"{d + 1:02d}_{h + 1:02d}" not in published]
     with ThreadPoolExecutor(jobs) as ex:
         for rec in ex.map(lambda dh: render(src, dur, W, H, bed, *dh), todo):
             old = manifest.get(rec["id"], {})
