@@ -41,3 +41,15 @@ fi
 cadgen --version
 agent-browser --version
 [ -x /root/.venvs/blender/bin/python ] && /root/.venvs/blender/bin/python -c "import bpy; print('blender', bpy.app.version_string)" || true
+
+# Hypit (video production runtime for the .claude/skills/hypit skill).
+# Own-organisation use only (Hypit license). Pass --hypit to (re)install.
+if [ "${1:-}" = "--hypit" ] || [ "${2:-}" = "--hypit" ]; then
+  if [ ! -x /root/tools/hypit/hypit ]; then
+    mkdir -p /root/tools
+    git clone -q --depth 1 https://github.com/hypit-ai/hypit.git /root/tools/hypit
+    (cd /root/tools/hypit && pnpm install --frozen-lockfile)
+  fi
+  ln -sf /root/tools/hypit/hypit /usr/local/bin/hypit
+  hypit --version
+fi

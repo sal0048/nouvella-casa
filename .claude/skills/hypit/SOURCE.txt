@@ -1,0 +1,1 @@
+Source: https://github.com/hypit-ai/hypit @557497b (Hypit license: Apache-2.0 with conditions - own-organisation use only, no resale/SaaS). Runtime: /root/tools/hypit (scripts/setup-tools.sh --hypit).
