@@ -6,7 +6,7 @@
 
 Campaign day 1 is START (Africa/Algiers). A reel is due only on its own day
 or later, so a day never publishes more than its 10 reels. The video URL is
-pinned to the commit that added the file (Meta fetches it from GitHub raw).
+pinned to the last commit that changed the file (Meta fetches it from GitHub raw).
 """
 
 from __future__ import annotations
@@ -40,10 +40,12 @@ def today_day():
 
 def raw_url(fname):
     rel = f"marketing/video-variants/out/reels/{fname}"
-    sha = subprocess.run(["git", "log", "-1", "--format=%h", "--diff-filter=A", "--", ":(top)" + rel],
+    sha = subprocess.run(["git", "log", "-1", "--format=%h", "--", ":(top)" + rel],
                          cwd=HERE, capture_output=True, text=True).stdout.strip()
-    if not sha:
-        raise SystemExit(f"{fname} is not committed yet")
+    dirty = subprocess.run(["git", "status", "--porcelain", "--", ":(top)" + rel],
+                           cwd=HERE, capture_output=True, text=True).stdout.strip()
+    if not sha or dirty:
+        raise SystemExit(f"{fname} is not committed and pushed in its final version yet")
     return f"https://raw.githubusercontent.com/{REPO}/{sha}/{rel}"
 
 
