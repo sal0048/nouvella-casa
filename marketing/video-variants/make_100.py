@@ -1,6 +1,6 @@
 """100 reels = 10 selling angles (one hook each) x 10 visual treatments, scheduled 10 per day.
 
-    python3 make_100.py <input.mp4> [--music-from SECONDS] [--jobs N] [--day D]
+    python3 make_100.py <input.mp4> [--music-from S] [--end S] [--jobs N] [--day D]
 
 Each day gets all 10 hooks once and all 10 treatments once (Latin square:
 treatment = (hook + day) % 10), so a day's results compare hooks fairly and
@@ -184,6 +184,8 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     TMP.mkdir(parents=True, exist_ok=True)
     dur, W, H = M.probe(src)
+    if "--end" in sys.argv:        # cut the source here (e.g. before a different model)
+        dur = min(dur, float(sys.argv[sys.argv.index("--end") + 1]))
     for h, text in enumerate(M.HOOKS):
         M.rtl_block(W, H, text, 300, 64).save(TMP / f"hook_{h + 1:02d}.png")
     M.cta(W, H).save(TMP / "cta.png")
