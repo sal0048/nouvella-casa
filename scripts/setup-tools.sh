@@ -53,3 +53,6 @@ if [ "${1:-}" = "--hypit" ] || [ "${2:-}" = "--hypit" ]; then
   ln -sf /root/tools/hypit/hypit /usr/local/bin/hypit
   hypit --version
 fi
+
+# Helper scripts of the cc-blender-skill skills (.claude/skills/*/scripts/*.py)
+pip install -q opencv-python-headless scipy 2>/dev/null || true
