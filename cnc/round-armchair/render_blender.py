@@ -284,20 +284,39 @@ def build_upholstery(mat):
     grid_mesh("back+arms", rows, mat)
 
 
-def render(mode: str):
-    samples, size = (96, 1200)
-    reset(samples, size)
+# extra camera angles for the product sheets: mode -> (build, azim, elev, dist, target_z)
+SHEET_VIEWS = {"frame-back": ("frame", 128.0, 24.0, 2.35, 0.38),
+               "top": ("frame", -58.0, 62.0, 2.6, 0.30)}
+
+
+def render(mode: str, sheet: bool = False):
+    """sheet=True: transparent background with the floor as a shadow catcher,
+    written to out/sheets/<mode>.png for marketing/product-sheets."""
+    samples, size = (96, 1200) if not sheet else (64, 1080)
+    sc = reset(samples, size)
     floor_and_lights()
-    if mode == "frame":
+    if sheet:
+        sc.render.film_transparent = True
+        sc.render.image_settings.color_mode = "RGBA"
+        # no floor at all: a shadow catcher leaves a grey haze box around the chair;
+        # the sheets draw their own soft ground shadow
+        next(o for o in sc.objects if o.type == "MESH").hide_render = True
+    build = SHEET_VIEWS.get(mode, (mode,))[0]
+    if mode in SHEET_VIEWS:
+        build_frame(material_wood())
+        camera(*SHEET_VIEWS[mode][1:])
+    elif build == "frame":
         build_frame(material_wood())
         camera(-58.0, 22.0, 2.35, 0.38)
-    elif mode == "exploded":
+    elif build == "exploded":
         build_frame(material_wood(), exploded=True)
         camera(-58.0, 18.0, 3.3, 0.72)
     else:
         build_upholstery(material_boucle())
         camera(-58.0, 16.0, 2.45, 0.40)
-    out = HERE / "out" / f"round-armchair-{mode}.png"
+    out = (HERE / "out" / "sheets" / f"{mode}.png") if sheet else \
+        (HERE / "out" / f"round-armchair-{mode}.png")
+    out.parent.mkdir(parents=True, exist_ok=True)
     bpy.context.scene.render.filepath = str(out)
     bpy.ops.render.render(write_still=True)
     print(f"wrote {out}")
@@ -308,4 +327,4 @@ if __name__ == "__main__":
     if mode == "export":
         export_meshes(HERE / "out")
     else:
-        render(mode)
+        render(mode, sheet="--sheet" in sys.argv)
