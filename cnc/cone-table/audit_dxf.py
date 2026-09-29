@@ -52,6 +52,26 @@ def arc_of(x0, y0, x1, y1, b):
     return (cx, cy), r, a0, a1
 
 
+def tool_lip_strip(cuts, pockets):
+    """Flat bend-test strip (a rectangle with pockets across it): worst full-thickness
+    lip left at a kerf end by the round end of the slot, or None if no strip."""
+    worst = None
+    for e, p in cuts:
+        pts = list(e.get_points("xyb"))
+        if len(pts) != 4 or any(abs(b) > 1e-12 for _, _, b in pts):   # straight rectangle only
+            continue
+        own = [q for q in pockets if p.contains(q.representative_point())]
+        if not own:
+            continue
+        y0, y1 = p.bounds[1], p.bounds[3]
+        for q in own:
+            qx0, qy0, qx1, qy1 = q.bounds
+            hw = (qx1 - qx0) / 2
+            lip = max((qy0 + hw) - y0, y1 - (qy1 - hw))
+            worst = lip if worst is None else max(worst, lip)
+    return worst
+
+
 def audit(path):
     doc = ezdxf.readfile(path)
     msp = doc.modelspace()
@@ -80,6 +100,27 @@ def audit(path):
     pockets = [Polygon(loop_points(e)) for e in layers.get(pocket_layers[0], [])] if pocket_layers else []
     shells = [(e, p) for e, p in cuts if sum(p.contains(q.centroid) for q in pockets) > 10]
     print(f"   {len(cuts)} cut loops, {len(pockets)} pockets, {len(shells)} kerfed shell(s)")
+    # pockets run out through the part edges: they must stay on the board and clear every other part
+    boards = [Polygon(loop_points(e)) for l, v in layers.items() if l.startswith("BOARD") for e in v]
+    outers = [p for _, p in cuts if not any(q.contains(p.representative_point()) and q.area > p.area
+                                             for _, q in cuts)]
+    hits = 0
+    for q in pockets:
+        own = next((p for p in outers if p.contains(q.representative_point())), None)
+        others = [p for p in outers if p is not own]
+        if any(q.intersects(p) for p in others) or (boards and not boards[0].buffer(1e-6).contains(q)):
+            hits += 1
+    if pockets:
+        near = min((q.distance(p) for q in pockets for p in outers
+                    if not p.contains(q.representative_point())), default=float("inf"))
+        print(f"   pockets vs other parts / board: {hits} touch; closest other part {near:.1f} mm")
+        if hits:
+            fails.append(f"{hits} kerf pockets cut into another part or off the board")
+    lip_strip = tool_lip_strip(cuts, pockets)
+    if lip_strip is not None:
+        print(f"   test strip: worst full-thickness lip at a kerf end {max(lip_strip, 0):.2f} mm")
+        if lip_strip > 1e-6:
+            fails.append(f"test strip kerfs leave a {lip_strip:.2f} mm full-thickness lip at the edge")
     cones = []
     for e, shell in shells:
         arcs = []
@@ -123,6 +164,26 @@ def audit(path):
               f"{n} kerfs = {cap:.1f} mm of gap ({ratio:.1f}x what is needed)")
         if ratio < 1:
             fails.append(f"kerfs cannot close the cone at radius {s:.0f} mm")
+        # A 6 mm cutter in a 6 mm slot leaves a round end: wood survives at the slot flanks
+        # up to (pocket end - TOOL_D/2). That wood must be past the curved edge, or a
+        # full-thickness lip stays at the kerf end and the kerf cannot close there.
+        own = [q for q in pockets if shell.contains(q.representative_point())]
+        hw = min(min(math.dist(a, b) for a, b in zip(list(q.minimum_rotated_rectangle.exterior.coords),
+                                                     list(q.minimum_rotated_rectangle.exterior.coords)[1:]))
+                 for q in own) / 2
+        lip_out, lip_in, n_full = [], [], 0
+        for q in own:
+            rr = [math.dist(c, p) for p in q.exterior.coords]
+            lip_out.append(r_out - (max(rr) - hw))
+            if min(rr) < r_in + L * 0.05:                    # full-length kerf: reaches the narrow edge too
+                n_full += 1
+                lip_in.append((min(rr) + hw) - r_in)
+        wo, wi = max(lip_out), max(lip_in, default=-1)
+        print(f"   kerf ends ({len(own)} at the wide edge, {n_full} at the narrow edge): worst "
+              f"full-thickness lip {max(wo, 0):.2f} / {max(wi, 0):.2f} mm (cutter Ø{2 * hw:g})")
+        if wo > 1e-6 or wi > 1e-6:
+            fails.append(f"kerfs stop short of the curved edges: {max(wo, wi):.2f} mm of full "
+                         f"{BOARD:g} mm wood stays at the kerf ends, the cone cannot close there")
         cones.append((key, (Rb, Rt, H, cosa)))
     # formers: discs; each must sit inside one of the cones (inner face at its height)
     discs = []

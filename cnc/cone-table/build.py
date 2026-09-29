@@ -67,7 +67,8 @@ def extend_kerf(rect, by, full=True):
 
 def kerf_polys(kerfs, dy=0.0):
     longest = max((kerf_len(k) for k in kerfs), default=0.0)
-    return [[(x, y + dy) for x, y in extend_kerf(k, T.KERF_OVERRUN, kerf_len(k) > longest - 1.0)]
+    by = T.KERF_TRIM + T.TOOL_D / 2 + T.KERF_OVERRUN      # cutter centre KERF_OVERRUN past the edge
+    return [[(x, y + dy) for x, y in extend_kerf(k, by, kerf_len(k) > longest - 1.0)]
             for k in kerfs]
 
 

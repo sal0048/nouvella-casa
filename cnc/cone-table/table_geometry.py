@@ -50,7 +50,10 @@ SKIN = 2.5               # material left on the show face under each kerf
 TOOL_D = 6.0             # kerf width = cutter diameter
 KERF_LAND = 6.0          # wood left between two kerfs at the top edge (NL CNC "zig-zag spacing")
 KERF_PITCH_MIN = TOOL_D + KERF_LAND      # 12 mm pitch at the tightest edge
-KERF_OVERRUN = 3.0       # kerf pocket runs past both curved edges
+KERF_OVERRUN = 3.0       # the cutter CENTRE runs this far past a curved edge
+KERF_TRIM = 0.5          # pocket drawn this far inside the outline (nesting sees the outline);
+                         # build.py adds KERF_TRIM + TOOL_D/2 + KERF_OVERRUN so the round
+                         # end of the slot clears the edge: no full-thickness lip at kerf ends
 
 R_BOT = 200.0            # cone outer radius at the floor (base 400 mm)
 R_TOP = 80.0             # cone outer radius at the top (top 160 mm = 40% of base, as the post)
@@ -170,16 +173,16 @@ def kerf_layout(s_in: float, s_out: float) -> list:
     return sorted(out)
 
 
-def kerf_rects(s_in: float, s_out: float, trim: float = 0.5) -> list:
-    """Kerf pockets as rectangles along the generatrices, kept just inside
-    the outline for nesting (build.py extends them by KERF_OVERRUN; the
-    short kerfs keep their inner, round-ended stop)."""
+def kerf_rects(s_in: float, s_out: float, trim: float = KERF_TRIM) -> list:
+    """Kerf pockets as rectangles along the generatrices, kept KERF_TRIM
+    inside the outline for nesting (build.py extends them through the
+    edges; the short kerfs keep their inner, round-ended stop)."""
     hw = TOOL_D / 2.0
     out = []
     for a, r0, r1 in kerf_layout(s_in, s_out):
         c, s = math.cos(a), math.sin(a)
-        r0 = r0 + trim + hw if r0 == s_in else r0
-        r1 = r1 - trim - hw
+        r0 = r0 + trim if r0 == s_in else r0
+        r1 = r1 - trim
         nx, ny = -s, c
         out.append([(r0 * c + hw * nx, r0 * s + hw * ny, 0.0),
                     (r0 * c - hw * nx, r0 * s - hw * ny, 0.0),
@@ -348,7 +351,7 @@ def coupon() -> Part:
     hw = TOOL_D / 2
     for k in range(n):
         x = pitch * (k + 0.5)
-        loops.append([(x - hw, 0.5 + 0, 0), (x + hw, 0.5, 0),
-                      (x + hw, width - 0.5, 0), (x - hw, width - 0.5, 0)])
+        loops.append([(x - hw, KERF_TRIM, 0), (x + hw, KERF_TRIM, 0),
+                      (x + hw, width - KERF_TRIM, 0), (x - hw, width - KERF_TRIM, 0)])
     return Part("COUPON", "BEND-TEST", 1, loops, "cut and bend first",
                 material=f"{T_SHELL:g}", kerfs=n, meta=dict(pitch=pitch))

@@ -9,6 +9,8 @@ python3 build.py              # out/CONE_18MM_CUT.dxf (clean) + labelled + out/p
 python3 build.py --sets 2     # out/CONE_18MM_CUT_x2.dxf: two cones, one sheet
 python3 verify.py             # deterministic checks (2D)
 python3 verify_3d.py          # exact 3D assembly: clashes, bearing, out/cone.step
+python3 dxf_vs_3d.py          # the shipped DXFs part by part = the verified 3D (0 mm2 difference)
+python3 audit_dxf.py out/CONE_18MM_CUT.dxf   # rebuild the cone from the DXF alone + kerf-end lips
 /root/.venvs/blender/bin/python render_blender.py hero|section
 /root/.venvs/blender/bin/python render_exploded.py   # after exporting out/stl
 ```
@@ -47,7 +49,10 @@ Here 94 mm in total: at most 2.2 mm per kerf.
 ## Layers
 
 `CUT` through cuts · `POCKET-KERF-15.5` kerf pockets on the BACK face,
-15.5 mm deep, 6 mm wide, running 3 mm past both curved edges ·
+15.5 mm deep, 6 mm wide; the cutter centre runs 3 mm past both curved edges,
+so the round slot end leaves no full-thickness lip (V8 stopped 0.5 mm short
+and left a 0.5-3.5 mm lip of 18 mm wood at every kerf end: fixed in V9,
+checked by `audit_dxf.py`) ·
 `ENGRAVE-LABEL` · `REFERENCE-SHEET` (the shells are too finely kerfed to
 engrave: mark by hand).
 
