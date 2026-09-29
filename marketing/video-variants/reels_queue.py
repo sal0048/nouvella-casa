@@ -4,8 +4,8 @@
     python3 reels_queue.py mark ID MEDIA_ID PERMALINK
     python3 reels_queue.py status
 
-Campaign day 1 is START (Africa/Algiers). A reel is due only on its own day
-or later, so a day never publishes more than its 10 reels. The video URL is
+Every unpublished reel is due now (the user dropped the 10-a-day cap); pacing
+comes from the routine and Instagram's 100-posts-per-24h quota. The video URL is
 pinned to the last commit that changed the file (Meta fetches it from GitHub raw).
 """
 
@@ -53,8 +53,7 @@ def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else "status"
     rows, pub = load()
     if cmd == "next":
-        day = today_day()
-        due = [r for r in rows if r["status"] == "ready" and r["day"] <= day]
+        due = [r for r in rows if r["status"] == "ready"]   # user: publish all, no daily cap
         if not due:
             print("{}")
             return

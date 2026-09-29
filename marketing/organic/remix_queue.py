@@ -4,8 +4,8 @@
     python3 remix_queue.py mark ID MEDIA_ID PERMALINK
     python3 remix_queue.py status
 
-Campaign day 1 is START (Africa/Algiers). `next` renders the recipe only when it is
-due, commits and pushes the mp4, and pins the video URL to that commit.
+Every unpublished recipe is due now (the user dropped the 10-a-day cap). `next`
+renders it, commits and pushes the mp4, and pins the video URL to that commit.
 """
 
 from __future__ import annotations
@@ -61,7 +61,7 @@ def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else "status"
     rows, pub = load()
     if cmd == "next":
-        due = [r for r in rows if r["status"] == "ready" and r["day"] <= today_day()]
+        due = [r for r in rows if r["status"] == "ready"]   # user: publish all, no daily cap
         if not due:
             print("{}")
             return
