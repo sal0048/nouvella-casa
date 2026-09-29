@@ -449,9 +449,25 @@ def a_files():
     return c
 
 
+def a_assembly():
+    """Assembly steps from the real 3D: each step shows the frame so far with the new
+    layer (terracotta) hovering above its seat. Only for products with P['steps']."""
+    c, d = a4_frame("Assembly")
+    num, tit, txt = F("Bold", 64), F("Bold", 40), F("Medium", 27)
+    for k, (view, title, text, qty) in enumerate(P["steps"]):
+        x0, y0 = 300 + (k % 2) * 650, 120 + (k // 2) * 620
+        d.text((x0, y0), f"{k + 1:02d}", font=num, fill=RED if k < len(P["steps"]) - 1 else OLIVE)
+        d.text((x0 + 100, y0 + 14), title, font=tit, fill=INK)
+        if qty:
+            d.text((x0 + 600, y0 + 14), qty, font=tit, fill=ACCENT, anchor="ra")
+        para(d, text, x0, y0 + 92, 590, txt, fill=(70, 64, 58))
+        put(c, render(view), x0 + 300, y0 + 390, 550, 330, shadow=False)
+    return c
+
+
 SHEETS = {"0_cover": s_cover, "1_hero": s1, "2_shell": s2, "3_cutaway": s3, "4_structure": s4,
           "5_views": s5, "6_technical-file": s6, "A1_technical": a_tech, "A2_structure": a_structure,
-          "A3_files": a_files}
+          "A3_files": a_files, "A4_assembly": a_assembly}
 
 if __name__ == "__main__":
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
@@ -463,6 +479,8 @@ if __name__ == "__main__":
         out.mkdir(parents=True, exist_ok=True)
         for name, fn in SHEETS.items():
             if only and name not in only:
+                continue
+            if name == "A4_assembly" and "steps" not in P:
                 continue
             fn().convert("RGB").save(out / f"{name}.jpg", quality=92)
         print(slug, "->", out.relative_to(HERE))

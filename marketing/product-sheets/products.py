@@ -165,8 +165,21 @@ def curl():
     return dict(
         slug="curl-chair", name="Curl", kind="Lounge chair", ren=d / "out" / "sheets",
         views=dict(finished="upholstered", skeleton="frame", cutaway="frame-back",
-                   exploded="exploded", top="top"),
+                   exploded="exploded", top="top", step1="step-base", step2="step-body",
+                   step3="step-seat", step4="step-back", step5="step-band"),
         board_mm=board, sheet=sheet,
+        # assembly order = render_blender.STEP_ORDER; the new layer of each step is terracotta
+        steps=[("step1", "Base ring", "P01 flat on a level floor, mortises facing up.", "x1"),
+               ("step2", "Body ribs", f"P03-P07 into the base mortises, bulge outward. The "
+                f"letter A-E on each rib gives its place (parts list).", f"x{ribs}"),
+               ("step3", "Seat ring", f"P02 down onto the rib tabs, all round. The {back} outer "
+                f"mortises face up.", "x1"),
+               ("step4", "Back ribs", "P08-P16 into the outer mortises. A and B are the low open "
+                "ends, I sits at the centre of the back.", f"x{back}"),
+               ("step5", "Back bands", "P17-P19 over the rib tops onto the 10 mm shoulders. "
+                "Check it is square, then glue (PVA D3) and staple.", f"x{bands}"),
+               ("skeleton", "Frame ready", "98 x 88 x 53 cm. Now foam, fabric and 4 cm legs.",
+                "")],
         # finished (frame + foam + legs) and the frame itself as verify_3d measures it
         dims=["W : 100 cm", "D : 90 cm", "H : 63 cm", "Frame : 98 x 88 x 53 cm", "Legs : 4 cm"],
         mat=[f"MDF : {board:g} mm", f"{cm(sheet[0])}x{cm(sheet[1])}  CM"],

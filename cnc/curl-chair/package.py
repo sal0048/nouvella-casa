@@ -226,8 +226,9 @@ def assembly_steps():
          "Lower P02 SEAT-RING onto the rib top tabs, working round the ring. The 13 outer "
          "mortises must face up for the back ribs."),
         ("BACK", "STEP 04 - Back and arm ribs",
-         "Stand the 13 BACK-RIBs in the outer seat-ring mortises: shortest (A) at the arm "
-         "ends, tallest (G) at the centre of the back."),
+         "Stand the 13 BACK-RIBs in the outer seat-ring mortises: A and B are the low open "
+         "ends (A right-front, B left-back), C next to them, I at the centre of the back. "
+         "Match each letter to its plan angle in the parts list."),
         ("BAND", "STEP 05 - Back bands",
          "Drop the three BACK-BANDs over the back rib tops until they rest on the 10 mm "
          "shoulders. Check the frame is square, then glue (PVA D3) and staple every joint."),

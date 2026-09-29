@@ -4,6 +4,7 @@
     /root/.venvs/blender/bin/python render_blender.py upholstered
     /root/.venvs/blender/bin/python render_blender.py exploded
     /root/.venvs/blender/bin/python render_blender.py export     # OBJ + STL
+    /root/.venvs/blender/bin/python render_blender.py step-body --sheet   # assembly step
 
 The frame is built from the exact cut geometry in chair_geometry.py: every
 part becomes an 18 mm extruded curve (openings and mortises included) placed
@@ -69,6 +70,16 @@ def material_wood():
     ramp.color_ramp.elements[1].color = (0.80, 0.63, 0.42, 1)
     nt.links.new(wave.outputs["Fac"], ramp.inputs["Fac"])
     nt.links.new(ramp.outputs["Color"], bsdf.inputs["Base Color"])
+    return m
+
+
+def material_highlight():
+    """Warm terracotta birch for the parts added in an assembly step."""
+    m = material_wood()
+    m.name = "birch-new"
+    ramp = next(n for n in m.node_tree.nodes if n.type == "VALTORGB")
+    ramp.color_ramp.elements[0].color = (0.62, 0.20, 0.07, 1)
+    ramp.color_ramp.elements[1].color = (0.80, 0.34, 0.14, 1)
     return m
 
 
@@ -157,9 +168,20 @@ EXPLODE = {"BASE": 0.0, "BODY": 180.0, "SEAT": 460.0, "BACK": 620.0, "BAND": 900
 EXPLODE_OUT = {"BODY": 90.0, "BACK": 60.0}
 
 
-def build_frame(mat, exploded=False):
+STEP_ORDER = ["BASE", "BODY", "SEAT", "BACK", "BAND"]
+
+
+def build_frame(mat, exploded=False, upto=None, hi_mat=None, hover=0.0):
+    """upto: build only the assembly layers up to this one (assembly-step view);
+    that layer gets hi_mat and hovers `hover` mm above its seat, ready to drop in."""
     def lift(key):
-        return EXPLODE[key] if exploded else 0.0
+        return (EXPLODE[key] if exploded else 0.0) + (hover if key == upto else 0.0)
+
+    def skip(key):
+        return upto is not None and STEP_ORDER.index(key) > STEP_ORDER.index(upto)
+
+    def m(key):
+        return hi_mat if (hi_mat is not None and key == upto) else mat
 
     def push(key, a):
         if not exploded:
@@ -168,20 +190,22 @@ def build_frame(mat, exploded=False):
         return d * math.cos(math.radians(a)) * MM, d * math.sin(math.radians(a)) * MM
 
     for p in C.build_parts():
+        if skip(p.key[:4]):
+            continue
         if p.key in ("BASE", "SEAT") or p.key.startswith("BAND"):
             z = {"BASE": 0.0, "SEAT": C.SEAT_Z}.get(p.key, C.BAND_Z)
-            ob = plate(f"P{p.num:02d} {p.label}", p.loops, mat)
+            ob = plate(f"P{p.num:02d} {p.label}", p.loops, m(p.key[:4]))
             ob.location.z = (z + C.T / 2 + lift(p.key[:4])) * MM
         elif p.key.startswith("BODY"):
             for a in C.BODY_ANGLES:
                 if C._type_angle(a) == C._type_angle(p.angles[0]):
-                    ob = plate(f"P{p.num:02d} {p.label} @{a:g}", p.loops, mat, dx=C.body_in(a))
+                    ob = plate(f"P{p.num:02d} {p.label} @{a:g}", p.loops, m("BODY"), dx=C.body_in(a))
                     ob.rotation_euler = (math.pi / 2, 0.0, math.radians(a))
                     px, py = push("BODY", a)
                     ob.location = (px, py, lift("BODY") * MM)
         elif p.key.startswith("BACK"):
             for a in p.angles:
-                ob = plate(f"P{p.num:02d} {p.label} @{a:g}", p.loops, mat,
+                ob = plate(f"P{p.num:02d} {p.label} @{a:g}", p.loops, m("BACK"),
                            dx=C.back_in(a) - C.SHOULDER, dy=C.SEAT_Z)
                 ob.rotation_euler = (math.pi / 2, 0.0, math.radians(a))
                 px, py = push("BACK", a)
@@ -284,6 +308,9 @@ def build_upholstery(mat):
     grid_mesh("back+arms", rows, mat)
 
 
+# assembly-step views: how far (mm) the new layer hovers above its seat
+STEP_HOVER = {"BASE": 0.0, "BODY": 110.0, "SEAT": 150.0, "BACK": 150.0, "BAND": 130.0}
+
 # extra camera angles for the product sheets: mode -> (build, azim, elev, dist, target_z)
 SHEET_VIEWS = {"frame-back": ("frame", 128.0, 24.0, 2.35, 0.38),
                "top": ("frame", -58.0, 62.0, 2.6, 0.30)}
@@ -302,7 +329,14 @@ def render(mode: str, sheet: bool = False):
         # the sheets draw their own soft ground shadow
         next(o for o in sc.objects if o.type == "MESH").hide_render = True
     build = SHEET_VIEWS.get(mode, (mode,))[0]
-    if mode in SHEET_VIEWS:
+    if mode.startswith("step-"):
+        # assembly step: layers so far, the new one highlighted and hovering (see
+        # marketing/product-sheets assembly sheet); one fixed camera for every step
+        key = mode[5:].upper()
+        build_frame(material_wood(), upto=key, hi_mat=material_highlight(),
+                    hover=STEP_HOVER[key])
+        camera(-58.0, 24.0, 2.75, 0.44)
+    elif mode in SHEET_VIEWS:
         build_frame(material_wood())
         camera(*SHEET_VIEWS[mode][1:])
     elif build == "frame":
