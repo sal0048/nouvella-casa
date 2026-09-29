@@ -141,4 +141,59 @@ def armchair():
     )
 
 
-PRODUCTS = {"cone-table": cone, "round-armchair": armchair}
+def curl():
+    d = CNC / "curl-chair"
+    pk = d / "package" / "CURL_LOUNGE_CHAIR"
+    params = {p["name"]: p["value"] for p in json.loads((pk / "05_DATA" / "parameters.json").read_text())}
+    parts = json.loads((pk / "05_DATA" / "parts.json").read_text())
+    nest1, nest2 = pk / "01_DXF" / "full_nesting.dxf", pk / "01_DXF" / "full_nesting_x2.dxf"
+    boards = sum(1 for e in ezdxf.readfile(nest1).modelspace()
+                 if e.dxftype() == "LWPOLYLINE" and e.dxf.layer == "REFERENCE-SHEET")
+    boards2 = sum(1 for e in ezdxf.readfile(nest2).modelspace()
+                  if e.dxftype() == "LWPOLYLINE" and e.dxf.layer == "REFERENCE-SHEET")
+    pieces = sum(p["quantity"] for p in parts)
+    board = params["MATERIAL_THICKNESS"]
+    ribs = sum(p["quantity"] for p in parts if p["name"].startswith("BODY-RIB"))
+    back = sum(p["quantity"] for p in parts if p["name"].startswith("BACK-RIB"))
+    bands = sum(p["quantity"] for p in parts if p["name"].startswith("BACK-BAND"))
+    assert outer_count(nest1) == pieces == 38 and outer_count(nest2) == 76, (outer_count(nest1), pieces)
+    assert (boards, boards2, board, ribs, back, bands, len(parts)) == (2, 3, 18, 20, 13, 3, 19)
+    # finished size = frame + foam + 4 cm legs (the Alba reference size)
+    assert (params["WIDTH"], params["DEPTH"], params["HEIGHT"], params["SEAT_FRAME_HEIGHT"]) == \
+        (980, 880, 530, 270), params
+    sheet = tuple(float(v) / 10 for v in params["SHEET_SIZE"].split(" x "))[::-1]
+    return dict(
+        slug="curl-chair", name="Curl", kind="Lounge chair", ren=d / "out" / "sheets",
+        views=dict(finished="upholstered", skeleton="frame", cutaway="frame-back",
+                   exploded="exploded", top="top"),
+        board_mm=board, sheet=sheet,
+        # finished (frame + foam + legs) and the frame itself as verify_3d measures it
+        dims=["W : 100 cm", "D : 90 cm", "H : 63 cm", "Frame : 98 x 88 x 53 cm", "Legs : 4 cm"],
+        mat=[f"MDF : {board:g} mm", f"{cm(sheet[0])}x{cm(sheet[1])}  CM"],
+        cover_line=f"MDF {board:g} mm · 100 × 90 × H63 cm",
+        bullets=["Ready-to-cut DXF for CNC", f"2 chairs from {boards2} boards",
+                 "Slot & tab, no screws"],
+        p_main=(f"A low lounge chair whose back rolls around the back and one side. {ribs} bulging "
+                f"body ribs shape the round seat block; {back} back ribs carry the roll and ease "
+                f"down at both open ends."),
+        p_joint=(f"Ribs drop into the ring mortises and {bands} back bands lock their spacing "
+                 f"from above. Glue every joint: no screws, no metal."),
+        p_file=(f"{pieces} parts, {len(parts)} shapes. One chair on {boards} boards, two chairs on "
+                f"{boards2}. Every piece is engraved with its number."),
+        board_lines=[f"available  {cm(sheet[0])} x{cm(sheet[1])} cm - {board / 10:g} cm",
+                     f"2 chairs from {boards2} boards"],
+        files=[f"1- 2D/DXF file For CNC (1 chair, {boards} boards).",
+               f"2- 2D/DXF file For CNC (2 chairs, {boards2} boards).",
+               "3- STEP-OBJ-STL files FOR VIEW.", "4- PDF: assembly, parts, dimensions."],
+        nests=[(nest2, 0, "1"), (nest2, 1, "2"), (nest2, 2, "3")],
+        parts=[(p["part_id"], p["name"].replace("-", " ").title().replace("Rib", "rib")
+                .replace("Ring", "ring").replace("Band", "band"), p["quantity"]) for p in parts],
+        parts_line=f"{pieces} parts · {len(parts)} shapes",
+        callouts=[(f"MDF {board:g} mm", (340, 170), "sk", (0.50, 0.10), 0.25, "right"),
+                  (f"{ribs} body ribs", (1110, 980), "sk", (0.72, 0.80), -0.2, "left"),
+                  ("Foam seat\n12~16 cm", (300, 1080), "fi", (0.40, 0.40), -0.3, "below"),
+                  ("Foam back 5~7 cm", (380, 1950), "fi", (0.70, 0.22), 0.3, "top")],
+    )
+
+
+PRODUCTS = {"cone-table": cone, "round-armchair": armchair, "curl-chair": curl}

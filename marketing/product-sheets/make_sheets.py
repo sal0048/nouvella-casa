@@ -353,10 +353,10 @@ def s6():
         d.text((620, 590 + k * 50), t, font=F("Bold", 34), fill=(28, 30, 60), anchor="mm")
     x = 100
     for path, board, label in P["nests"]:
-        n = nest(path, board, 170, 330)
-        c.alpha_composite(n, (x, 690))
+        n = nest(path, board, min(170, 430 // len(P["nests"]) - 30), 330)   # stay left of the contact block
+        c.alpha_composite(n, (int(x), 690))
         d.text((x + n.width / 2, 1040), label, font=F("SemiBold", 22), fill=INK, anchor="mm")
-        x += n.width + 40
+        x += n.width + 30
     s = 64
     d.ellipse([560, 780, 560 + s, 780 + s], fill=(28, 30, 60))
     insta(d, 560 + 14, 780 + 14, s - 28, (255, 255, 255))
@@ -426,15 +426,16 @@ def a_files():
     d.text((1180, 280), f"MDF : {P['board_mm']:g} mm", font=F("Bold", 76), fill=RED, anchor="mm")
     d.text((1180, 380), f"{cm(P['sheet'][0])}x{cm(P['sheet'][1])}  CM", font=F("Bold", 76), fill=RED,
            anchor="mm")
-    x = 340
+    step = 1260 / len(P["nests"])     # spread the boards over x 320..1580
+    x = 320 + (step - min(460, step - 40)) / 2
     labels = []
     for path, board, label in P["nests"]:
-        im = nest(path, board, 460, 900)
+        im = nest(path, board, int(min(460, step - 40)), 900)
         faint = im.copy()
         faint.putalpha(im.getchannel("A").point(lambda v: v * 0.55))
-        c.alpha_composite(faint, (x, 780))
+        c.alpha_composite(faint, (int(x), 780))
         labels.append((x + im.width / 2, 780 + im.height + 40, label))
-        x += 540
+        x += step
     fnt = F("Bold", 46)
     for k, t in enumerate(P["files"]):
         y = 760 + k * 230
