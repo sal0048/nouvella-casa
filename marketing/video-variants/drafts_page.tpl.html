@@ -1,0 +1,74 @@
+<title>Nouvella Casa Reels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&family=Reem+Kufi:wght@600&display=swap">
+<style>
+/* Layout: one column of reel cards, phone first; thumb left, caption and actions right */
+:root {
+  --bg: #f3f0ec; --card: #fffdfa; --fg: #2a2521; --muted: #7a6f66; --line: #e2dbd3; --accent: #8a5a36; --ok: #3f7a4d;
+  --display: "Reem Kufi", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --body: "IBM Plex Sans Arabic", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #1b1815; --card: #24201c; --fg: #efe8e1; --muted: #a99d92; --line: #3a332d; --accent: #d49a6a; --ok: #7cc28c; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #1b1815; --card: #24201c; --fg: #efe8e1; --muted: #a99d92; --line: #3a332d; --accent: #d49a6a; --ok: #7cc28c; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 720px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 48px; display: grid; gap: 14px; }
+header { display: grid; gap: 6px; }
+h1 { font-family: var(--display); font-size: 1.6rem; margin: 0; color: var(--accent); text-wrap: balance; }
+.lead { margin: 0; color: var(--muted); }
+.steps { margin: 0; padding-inline-start: 20px; color: var(--fg); }
+.progress { font-variant-numeric: tabular-nums; font-weight: 600; }
+.card { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+.card.is-done { opacity: .55; }
+.thumb { width: 96px; height: auto; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 6px; background: var(--line); }
+.body { min-width: 0; display: grid; gap: 6px; align-content: start; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); }
+.rid { font-weight: 600; color: var(--fg); font-variant-numeric: tabular-nums; direction: ltr; }
+.chip { border: 1px solid var(--line); border-radius: 99px; padding: 0 8px; }
+.hook { margin: 0; font-weight: 600; }
+.cap { margin: 0; white-space: pre-wrap; font-family: var(--body); font-size: 13px; color: var(--muted); max-height: 7.5em; overflow: auto; }
+.acts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn { font: inherit; font-size: 14px; font-weight: 600; color: var(--accent); background: transparent; border: 1px solid var(--accent); border-radius: 8px; padding: 6px 12px; text-decoration: none; cursor: pointer; }
+.btn:focus-visible, .done input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn.copied { color: var(--ok); border-color: var(--ok); }
+.done { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; color: var(--muted); }
+</style>
+<div class="wrap" dir="rtl" lang="ar">
+  <header>
+    <h1>ريلز Nouvella Casa للنشر</h1>
+    <p class="lead">{{COUNT}} ريل Gemini ما تنشروش مازال. <span class="progress" id="prog"></span></p>
+    <ol class="steps">
+      <li>اضغط «حمّل الفيديو»، يتحفظ في التيليفون.</li>
+      <li>انسخ الكابشن، وفي Instagram دير Reel جديد وحط الفيديو.</li>
+      <li>فعّل «AI label» (هاذ الفيديوهات معمولة بـ Gemini)، ومن بعد اختار Trial ولا Draft ولا جدولة.</li>
+      <li>علّم «تحط» باش تعرف وين حبست.</li>
+    </ol>
+  </header>
+  {{CARDS}}
+</div>
+<script>
+(function () {
+  var cards = [].slice.call(document.querySelectorAll('.card'));
+  function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function set(k, v) { try { v ? localStorage.setItem(k, '1') : localStorage.removeItem(k); } catch (e) {} }
+  function prog() {
+    var n = cards.filter(function (c) { return c.classList.contains('is-done'); }).length;
+    document.getElementById('prog').textContent = 'تحطو ' + n + ' من ' + cards.length + '.';
+  }
+  cards.forEach(function (c) {
+    var box = c.querySelector('input[type=checkbox]');
+    box.checked = !!get('done-' + c.dataset.id);
+    c.classList.toggle('is-done', box.checked);
+    box.addEventListener('change', function () { set('done-' + c.dataset.id, box.checked); c.classList.toggle('is-done', box.checked); prog(); });
+  });
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-copy]'); if (!b) return;
+    var pre = document.getElementById(b.dataset.copy);
+    function ok() { b.textContent = 'تنسخ'; b.classList.add('copied'); setTimeout(function () { b.textContent = 'انسخ الكابشن'; b.classList.remove('copied'); }, 1500); }
+    function sel() { var r = document.createRange(); r.selectNodeContents(pre); var s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = 'محدد، انسخ بيدك'; }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(pre.textContent).then(ok, sel); else sel();
+  });
+  prog();
+})();
+</script>
