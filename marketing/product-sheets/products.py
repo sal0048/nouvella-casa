@@ -209,4 +209,72 @@ def curl():
     )
 
 
-PRODUCTS = {"cone-table": cone, "round-armchair": armchair, "curl-chair": curl}
+def lena():
+    d = CNC / "lena-sofa"
+    pk = d / "package" / "LENA_SOFA"
+    params = {p["name"]: p["value"] for p in json.loads((pk / "05_DATA" / "parameters.json").read_text())}
+    parts = json.loads((pk / "05_DATA" / "parts.json").read_text())
+    nest1 = pk / "01_DXF" / "full_nesting.dxf"
+    boards = sum(1 for e in ezdxf.readfile(nest1).modelspace()
+                 if e.dxftype() == "LWPOLYLINE" and e.dxf.layer == "REFERENCE-SHEET")
+    pieces = sum(p["quantity"] for p in parts)
+    board = params["MATERIAL_THICKNESS"]
+    q = {p["name"]: p["quantity"] for p in parts}
+    arches, spacers = q["BACK-ARCH"], q["ARM-SPACER"]
+    ribs = q["RIB-A"] + q["RIB-B"]
+    assert outer_count(nest1) == pieces == 22, (outer_count(nest1), pieces)
+    assert (boards, board, ribs, arches, spacers, len(parts)) == (4, 18, 3, 4, 6, 11)
+    assert (params["WIDTH"], params["DEPTH"], params["HEIGHT"], params["SEAT_FRAME_HEIGHT"],
+            params["ARM_HEIGHT"]) == (2200, 860, 800, 330, 570), params
+    sheet = tuple(float(v) / 10 for v in params["SHEET_SIZE"].split(" x "))[::-1]
+    return dict(
+        slug="lena-sofa", name="Lena", kind="Sofa", ren=d / "out" / "sheets",
+        views=dict(finished="upholstered", skeleton="frame", cutaway="frame-back",
+                   exploded="exploded", top="top", step1="step-back", step2="step-rails",
+                   step3="step-inner", step4="step-spacers", step5="step-outer",
+                   step6="step-deck"),
+        board_mm=board, sheet=sheet,
+        # assembly order = lena_geometry.GROUP_ORDER, checked in 3D by verify_3d.py
+        steps=[("step1", "Back chain", "P01-P03: ribs and arches slide together. Two arches "
+                "tab into every post.", f"x{ribs + arches}"),
+               ("step2", "Seat rails", "P04-P06 drop into the slots on the rib tops, "
+                "flush with them.", "x3"),
+               ("step3", "Inner arms", "P07 left and P08 right slide onto the rail and arch "
+                "tabs.", "x2"),
+               ("step4", "Arm spacers", "P09 into the inner panels, round cap up, resting on "
+                "the panel edge.", f"x{spacers}"),
+               ("step5", "Outer arms", "P10 onto the spacers' free tabs. The arms are closed "
+                "boxes.", "x2"),
+               ("step6", "Seat decks", "P11 onto the rib tabs. Check it is square, then glue "
+                "and staple.", "x2")],
+        dims=["W : 226 cm", "D : 90 cm", "H : 85 cm", "Seat : 45 cm",
+              "Frame : 220x86x80"],
+        mat=[f"MDF : {board:g} mm", f"{cm(sheet[0])}x{cm(sheet[1])}  CM"],
+        cover_line=f"MDF {board:g} mm · 226 × 90 × H85 cm",
+        bullets=["Ready-to-cut DXF for CNC", f"One sofa from {boards} boards",
+                 "Slot & tab, no screws"],
+        p_main=(f"A 3-seat sofa with {arches} arched back cushions and round drum arms. "
+                f"{ribs} seat ribs carry the back posts; the {arches} arches tab into them "
+                f"and give the Lena silhouette."),
+        p_joint=(f"Rails halve into the ribs, the arms slide onto the rail tabs, {spacers} "
+                 f"spacers close the drums. Glue every joint: no screws, no metal."),
+        p_file=(f"{pieces} parts, {len(parts)} shapes, on {boards} boards. Every piece is "
+                f"engraved with its number in assembly order."),
+        board_lines=[f"available  {cm(sheet[0])} x{cm(sheet[1])} cm - {board / 10:g} cm",
+                     f"1 sofa from {boards} boards"],
+        files=[f"1- 2D/DXF file For CNC ({boards} boards).",
+               "2- One DXF per part (11 shapes).",
+               "3- STEP-OBJ-STL files FOR VIEW.", "4- PDF: assembly, parts, dimensions."],
+        nests=[(nest1, k, str(k + 1)) for k in range(boards)],
+        parts=[(p["part_id"], p["name"].replace("-", " ").title().replace("Inner L", "inner L")
+                .replace("Inner R", "inner R"), p["quantity"]) for p in parts],
+        parts_line=f"{pieces} parts · {len(parts)} shapes",
+        callouts=[(f"MDF {board:g} mm", (330, 200), "sk", (0.42, 0.20), 0.25, "right"),
+                  (f"{arches} back arches", (300, 900), "sk", (0.40, 0.10), 0.3, "top"),
+                  ("Foam seat\n12~14 cm", (300, 1130), "fi", (0.45, 0.55), -0.3, "below"),
+                  ("Drum arms", (1150, 1930), "fi", (0.88, 0.62), 0.3, "top")],
+    )
+
+
+PRODUCTS = {"cone-table": cone, "round-armchair": armchair, "curl-chair": curl,
+            "lena-sofa": lena}
