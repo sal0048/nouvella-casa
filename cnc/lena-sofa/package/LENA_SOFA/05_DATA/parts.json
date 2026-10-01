@@ -1,0 +1,222 @@
+[
+  {
+    "part_id": "P01",
+    "name": "RIB-A",
+    "quantity": 2,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 860.0,
+      "y": 720.0
+    },
+    "area_mm2": 272517.0,
+    "cutouts": 7,
+    "corners_relieved": 13,
+    "plane": "YZ",
+    "assembly_group": "BACK",
+    "role": "seat rib + back post, deck tabs",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P02",
+    "name": "RIB-B",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 860.0,
+      "y": 720.0
+    },
+    "area_mm2": 271173.4,
+    "cutouts": 7,
+    "corners_relieved": 9,
+    "plane": "YZ",
+    "assembly_group": "BACK",
+    "role": "middle rib + post, under the deck split",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P03",
+    "name": "BACK-ARCH",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 462.5,
+      "y": 470.0
+    },
+    "area_mm2": 183122.6,
+    "cutouts": 0,
+    "corners_relieved": 8,
+    "plane": "XZ",
+    "assembly_group": "BACK",
+    "role": "Lena back arch, one per bay, tabbed into the posts",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P04",
+    "name": "RAIL-FRONT",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 1796.0,
+      "y": 262.0
+    },
+    "area_mm2": 456195.8,
+    "cutouts": 0,
+    "corners_relieved": 14,
+    "plane": "XZ",
+    "assembly_group": "RAILS",
+    "role": "seat rail, halved into the ribs, tabs into the arms",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P05",
+    "name": "RAIL-MID",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 1796.0,
+      "y": 162.0
+    },
+    "area_mm2": 281702.1,
+    "cutouts": 0,
+    "corners_relieved": 10,
+    "plane": "XZ",
+    "assembly_group": "RAILS",
+    "role": "seat rail, halved into the ribs, tabs into the arms",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P06",
+    "name": "RAIL-BACK",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 1796.0,
+      "y": 212.0
+    },
+    "area_mm2": 369620.8,
+    "cutouts": 0,
+    "corners_relieved": 14,
+    "plane": "XZ",
+    "assembly_group": "RAILS",
+    "role": "seat rail, halved into the ribs, tabs into the arms",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P07",
+    "name": "ARM-INNER-L",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 860.0,
+      "y": 720.0
+    },
+    "area_mm2": 330096.0,
+    "cutouts": 16,
+    "corners_relieved": 3,
+    "plane": "YZ",
+    "assembly_group": "INNER",
+    "role": "left inner arm panel: rails, spacers, end arch",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P08",
+    "name": "ARM-INNER-R",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 860.0,
+      "y": 720.0
+    },
+    "area_mm2": 330096.0,
+    "cutouts": 16,
+    "corners_relieved": 3,
+    "plane": "YZ",
+    "assembly_group": "INNER",
+    "role": "right inner arm panel: rails, spacers, end arch",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P09",
+    "name": "ARM-SPACER",
+    "quantity": 6,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 220.0,
+      "y": 510.0
+    },
+    "area_mm2": 94901.6,
+    "cutouts": 0,
+    "corners_relieved": 10,
+    "plane": "XZ",
+    "assembly_group": "SPACERS",
+    "role": "joins the arm panels, round drum top",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P10",
+    "name": "ARM-OUTER",
+    "quantity": 2,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 860.0,
+      "y": 720.0
+    },
+    "area_mm2": 336223.5,
+    "cutouts": 9,
+    "corners_relieved": 3,
+    "plane": "YZ",
+    "assembly_group": "OUTER",
+    "role": "outer arm panel, spacer mortises",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P11",
+    "name": "SEAT-DECK",
+    "quantity": 2,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 880.0,
+      "y": 625.0
+    },
+    "area_mm2": 332228.9,
+    "cutouts": 6,
+    "corners_relieved": 0,
+    "plane": "XY",
+    "assembly_group": "DECK",
+    "role": "seat deck on rib and rail tops (2nd one flipped)",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  }
+]

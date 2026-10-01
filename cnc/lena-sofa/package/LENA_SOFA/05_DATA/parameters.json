@@ -1,0 +1,163 @@
+[
+  {
+    "name": "MATERIAL",
+    "value": "MDF",
+    "unit": "",
+    "status": "USER_CONFIRMED",
+    "note": "user works in MDF; birch plywood also suitable"
+  },
+  {
+    "name": "MATERIAL_THICKNESS",
+    "value": 18.0,
+    "unit": "mm",
+    "status": "USER_CONFIRMED",
+    "note": "NOMINAL - measure the real sheet before cutting"
+  },
+  {
+    "name": "CLEARANCE",
+    "value": 1.0,
+    "unit": "mm",
+    "status": "ADOPTED_FROM_TOKYO_PACK",
+    "note": "total across each slot - UNTESTED FIT"
+  },
+  {
+    "name": "SLOT_WIDTH",
+    "value": 19.0,
+    "unit": "mm",
+    "status": "DERIVED",
+    "note": "MATERIAL_THICKNESS + CLEARANCE"
+  },
+  {
+    "name": "TAB_LENGTH",
+    "value": 40.0,
+    "unit": "mm",
+    "status": "ADOPTED_FROM_TOKYO_PACK",
+    "note": ""
+  },
+  {
+    "name": "MORTISE_LENGTH",
+    "value": 41.0,
+    "unit": "mm",
+    "status": "DERIVED",
+    "note": "TAB_LENGTH + CLEARANCE"
+  },
+  {
+    "name": "SLOT_DEPTH",
+    "value": 18.0,
+    "unit": "mm",
+    "status": "DERIVED",
+    "note": "through-mortises; rail halvings to mid-height"
+  },
+  {
+    "name": "CNC_BIT_DIAMETER",
+    "value": 6.0,
+    "unit": "mm",
+    "status": "ASSUMED_USER_INPUT_REQUIRED",
+    "note": "sizes every dogbone relief"
+  },
+  {
+    "name": "RELIEF_RADIUS",
+    "value": 3.2,
+    "unit": "mm",
+    "status": "DERIVED",
+    "note": "CNC_BIT_DIAMETER / 2 + 0.2"
+  },
+  {
+    "name": "KERF_COMPENSATION",
+    "value": null,
+    "unit": "mm",
+    "status": "UNKNOWN",
+    "note": "apply the tool-radius offset in CAM; the DXF is net part geometry"
+  },
+  {
+    "name": "SHEET_SIZE",
+    "value": "2440 x 1220",
+    "unit": "mm",
+    "status": "ASSUMED_USER_INPUT_REQUIRED",
+    "note": "standard sheet; confirm the supplier size"
+  },
+  {
+    "name": "PART_GAP",
+    "value": 10.0,
+    "unit": "mm",
+    "status": "ADOPTED_FROM_TOKYO_PACK",
+    "note": ""
+  },
+  {
+    "name": "SHEET_EDGE",
+    "value": 9.0,
+    "unit": "mm",
+    "status": "ADOPTED_FROM_TOKYO_PACK",
+    "note": "clamping margin"
+  },
+  {
+    "name": "WIDTH",
+    "value": 2200.0,
+    "unit": "mm",
+    "status": "DESIGN_CHOICE_UNCONFIRMED",
+    "note": "outer arm face to outer arm face"
+  },
+  {
+    "name": "DEPTH",
+    "value": 860.0,
+    "unit": "mm",
+    "status": "DESIGN_CHOICE_UNCONFIRMED",
+    "note": "frame; + back foam"
+  },
+  {
+    "name": "HEIGHT",
+    "value": 800.0,
+    "unit": "mm",
+    "status": "DESIGN_CHOICE_UNCONFIRMED",
+    "note": "arch crowns; + 40~50 mm back cushion"
+  },
+  {
+    "name": "SEAT_FRAME_HEIGHT",
+    "value": 330.0,
+    "unit": "mm",
+    "status": "DESIGN_CHOICE_UNCONFIRMED",
+    "note": "deck top; + 120~140 mm seat cushion = ~450"
+  },
+  {
+    "name": "ARM_HEIGHT",
+    "value": 570.0,
+    "unit": "mm",
+    "status": "DESIGN_CHOICE_UNCONFIRMED",
+    "note": "top of the drum (spacer caps)"
+  },
+  {
+    "name": "ARM_WIDTH",
+    "value": 220.0,
+    "unit": "mm",
+    "status": "DESIGN_CHOICE_UNCONFIRMED",
+    "note": ""
+  },
+  {
+    "name": "SEAT_BAYS",
+    "value": 4,
+    "unit": "",
+    "status": "DESIGN_CHOICE_UNCONFIRMED",
+    "note": "one arch per bay, 426.5 mm clear each"
+  },
+  {
+    "name": "POST_HEIGHT",
+    "value": 720.0,
+    "unit": "mm",
+    "status": "DESIGN_CHOICE_UNCONFIRMED",
+    "note": "rib / arm post tops behind the arches"
+  },
+  {
+    "name": "PLINTH_RECESS",
+    "value": 40.0,
+    "unit": "mm",
+    "status": "DESIGN_CHOICE_UNCONFIRMED",
+    "note": "between 120 mm feet front and back"
+  },
+  {
+    "name": "GRAIN_DIRECTION",
+    "value": null,
+    "unit": "",
+    "status": "DERIVED",
+    "note": "not applicable to MDF; for plywood, run rail grain along the length"
+  }
+]
