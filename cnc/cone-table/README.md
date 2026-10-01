@@ -77,3 +77,24 @@ engrave: mark by hand).
 Over each kerf the 2.5 mm skin bends at about R42 at worst (~3 % strain).
 Whether it survives is unknown until the bend-test coupon is cut; if it
 cracks, thin the skin or tighten the pitch.
+
+## Bending jig (gabarit)
+
+`python3 jig.py` writes `out/jig/CONE_JIG.dxf` (+ ArtCAM R12 copies and a
+preview): four flat MDF 18 rings that hold the shell round while the glue
+sets, as in the workshop video. Each bore equals the cone's outer diameter at
+one height, so the ring slides down from the top and stops there.
+
+| Ring | Bore | Stops at | Outer |
+|---|---|---|---|
+| JIG-BASE | 401 | on the bench, round the floor edge | 491 |
+| JIG-1 | 340 | z 112.5 | 430 |
+| JIG-2 | 280 | z 225 | 370 |
+| JIG-3 | 220 | z 337.5 | 310 |
+
+Use: glue the formers and core, stand them in JIG-BASE, wrap the glued shell
+round, then push JIG-1, JIG-2, JIG-3 down **in that order** (a ring already in
+place blocks a bigger one). Pairs are cut concentric (JIG-2 inside the base
+ring's bore, JIG-3 inside JIG-1's): about 951 x 511 mm of offcut. Cut the
+inner ring of each pair before the bore around it. The jig is reusable for
+every cone.
