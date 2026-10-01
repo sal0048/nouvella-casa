@@ -6,8 +6,11 @@ ArtCAM (2008 - 2018) reads DXF R12 most reliably. Newer files (R2010,
 LWPOLYLINE, extended layer names) can import empty, lose arcs or open
 the vectors. This writes two files next to each other:
 
-  <name>_ArtCAM_R12.dxf        R12, every loop a closed 2D POLYLINE, arcs kept
-                               as bulges (exact geometry)
+  <name>_ArtCAM_R12.dxf        R12, full circles as CIRCLE entities, every
+                               other loop a closed 2D POLYLINE with its arcs
+                               split to <= 90 deg bulges (exact geometry;
+                               semicircle bulges are what some importers
+                               draw wrong)
   <name>_ArtCAM_R12_lines.dxf  R12, arcs flattened to short straight segments
                                (max 0.02 mm off the arc) - the fallback if an
                                ArtCAM version mis-reads bulges
@@ -28,6 +31,7 @@ from pathlib import Path
 
 import ezdxf
 import ezdxf.bbox
+from ezdxf.math import bulge_to_arc
 from shapely.geometry import Polygon
 
 SAGITTA = 0.02          # mm, max distance of a flattened segment from its arc
@@ -78,11 +82,52 @@ def loops_of(path):
         elif t == "POLYLINE":
             pts = [(v.dxf.location.x, v.dxf.location.y, v.dxf.get("bulge", 0.0)) for v in e.vertices]
             out.append((e.dxf.layer, pts, e.is_closed))
+        elif t == "CIRCLE":
+            c, r = e.dxf.center, e.dxf.radius
+            out.append((e.dxf.layer, [(c.x + r, c.y, 1.0), (c.x - r, c.y, 1.0)], True))
         elif t in ("TEXT", "MTEXT"):
             continue
         else:
             raise SystemExit(f"unsupported entity {t} on layer {e.dxf.layer}: extend artcam_dxf.py")
     return doc, out
+
+
+def full_circle(pts):
+    """A loop drawn as arcs only, all on one circle -> (cx, cy, r), else None."""
+    if any(abs(b) < 1e-9 for *_, b in pts):
+        return None
+    cs = []
+    n = len(pts)
+    for i, (x0, y0, b) in enumerate(pts):
+        x1, y1, _ = pts[(i + 1) % n]
+        c, _, _, r = bulge_to_arc((x0, y0), (x1, y1), b)
+        cs.append((c.x, c.y, r))
+    cx, cy, r = cs[0]
+    if all(abs(a - cx) < 1e-6 and abs(b - cy) < 1e-6 and abs(c - r) < 1e-6 for a, b, c in cs):
+        return cx, cy, r
+    return None
+
+
+def split_arcs(pts, max_deg=90.0):
+    """Split every bulge arc wider than max_deg into equal sub-arcs: large
+    bulges (a semicircle is bulge 1) are where some CAM importers go wrong."""
+    out = []
+    n = len(pts)
+    for i, (x0, y0, b) in enumerate(pts):
+        if abs(b) < 1e-12:
+            out.append((x0, y0, 0.0))
+            continue
+        x1, y1, _ = pts[(i + 1) % n]
+        theta = 4.0 * math.atan(b)
+        k = max(1, math.ceil(abs(math.degrees(theta)) / max_deg - 1e-9))
+        c, a0, _, r = bulge_to_arc((x0, y0), (x1, y1), b)
+        start = math.atan2(y0 - c.y, x0 - c.x)
+        sub = math.tan(theta / k / 4.0)
+        for j in range(k):
+            a = start + theta * j / k
+            out.append((c.x + r * math.cos(a), c.y + r * math.sin(a), sub))
+        out[-k] = (x0, y0, sub)                 # keep the exact start vertex
+    return out
 
 
 def write(loops, layers, path, lines):
@@ -93,6 +138,12 @@ def write(loops, layers, path, lines):
     msp = doc.modelspace()
     for layer, pts, closed in loops:
         attribs = {"layer": safe_layer(layer)}
+        circ = full_circle(pts) if closed else None
+        if circ and not lines:
+            msp.add_circle((circ[0], circ[1]), circ[2], dxfattribs=attribs)
+            continue
+        if not lines:
+            pts = split_arcs(pts)
         if lines:
             msp.add_polyline2d(flatten(pts, closed), close=closed, dxfattribs=attribs)
         else:
@@ -133,12 +184,20 @@ def main(src: Path, out_dir: Path) -> int:
         dst = out_dir / f"{stem}{suffix}.dxf"
         write(loops, layers, dst, lines)
         _, back = loops_of(dst)
+        def shape(p, c):
+            return Polygon(flatten(p, c)) if c else None
         same = len(back) == len(loops) and all(
             c0 == c1 and safe_layer(l0) == l1 and abs(area(p0, c0) - area(p1, c1)) < 0.5
+            and shape(p0, c0).centroid.distance(shape(p1, c1).centroid) < 0.05
             for (l0, p0, c0), (l1, p1, c1) in zip(loops, back))
-        ver = ezdxf.readfile(dst).dxfversion
-        print(f"{'OK  ' if same else 'FAIL'} {dst.name}: {ver}, {len(back)} loops, "
-              f"{sum(c for *_, c in back)} closed, layers {sorted({l for l, *_ in back})}")
+        out = ezdxf.readfile(dst)
+        ents = out.modelspace()
+        big = max((abs(v.dxf.bulge) for e in ents.query("POLYLINE") for v in e.vertices), default=0.0)
+        same &= lines or big <= math.tan(math.radians(22.5)) + 1e-6     # every arc <= 90 deg
+        print(f"{'OK  ' if same else 'FAIL'} {dst.name}: {out.dxfversion}, {len(back)} loops "
+              f"({len(ents.query('CIRCLE'))} CIRCLE, {len(ents.query('POLYLINE'))} POLYLINE), "
+              f"all closed, largest arc {math.degrees(4 * math.atan(big)):.0f} deg, "
+              f"layers {sorted({l for l, *_ in back})}")
         ok &= same
     return 0 if ok else 1
 
