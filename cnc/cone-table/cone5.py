@@ -1,11 +1,17 @@
-"""Cone D400 with a plain 5 mm skin (no kerfs) - the piece and its gabarit
-in ONE file, as the workshop asked.
+"""Cone D400 with a KERFED 5 mm skin - the piece, a bend-test coupon and
+the gabarit in ONE file, as the workshop asked.
+
+V1 of this file used a plain 5 mm sector: the workshop cut it and it would
+not bend round the cone (5 mm MDF at R80 is ~3 % strain on the face). Now the
+back face is kerfed like V9: 6 mm pockets, KERF_DEPTH deep, leaving SKIN_LEFT
+of wood under the show face.
 
     python3 cone5.py              # out/cone5/CONE_5MM_piece_et_gabarit.dxf + ArtCAM R12
 
-Board A, 5 mm (flexible MDF / plywood): the SHELL, a plain annular sector.
-  It is developed on the MID-thickness surface: bent, the mid layer keeps its
-  length, so the two straight edges meet exactly (no overlap, no gap).
+Board A, 5 mm: the SHELL (annular sector, kerf pockets on its BACK face) and
+  a BEND-TEST strip with the tightest kerf pitch - cut and bend it first.
+  With kerfs the show face is the layer that does not stretch, so the sector
+  is developed on the OUTER face (as V9); the kerfs close on the back.
 Board B, 18 mm: the gabarit
   * inside  - FORMER discs + crossing CORE plates (the V9 skeleton, resized
               for a 5 mm skin). The skin is bent round them and glued; they
@@ -30,12 +36,17 @@ sys.path.append(str(HERE.parents[0] / "curved-sofa"))
 
 import table_geometry as G
 
-SKIN = 5.0
-G.T_SHELL = SKIN                 # formers and core follow the thinner skin
+SKIN = 5.0                        # board thickness of the shell
+SKIN_LEFT = 1.5                   # wood kept under the show face (ASSUMED: check on the coupon)
+G.T_SHELL = SKIN                  # formers and core follow the thinner skin
+G.SKIN = SKIN_LEFT
+G.DEPTH = SKIN - SKIN_LEFT        # 3.5 mm kerf pockets
+KERF_LAYER = f"POCHE_KERF_{G.DEPTH:g}MM"
 
 import ezdxf                      # noqa: E402
 from shapely.geometry import Polygon  # noqa: E402
 
+import build                      # noqa: E402  (kerf pocket extension, as V9)
 import jig                        # noqa: E402
 import sofa_layout as L           # noqa: E402
 
@@ -44,21 +55,19 @@ SHEET_W, SHEET_H, MARGIN, GAP = 2440.0, 1220.0, 10.0, 10.0
 BOARD_GAP = 300.0                 # space between the two boards in the drawing
 
 
-def r_mid(z):
-    """Mid-thickness radius of the 5 mm skin (horizontal)."""
-    return G.R(z) - (SKIN / 2) / G.COS_A
-
-
 class P:
     def __init__(self, key, label, loops, layer):
         self.key, self.label, self.qty, self.loops, self.layer = key, label, 1, loops, layer
 
 
 def parts():
-    shell = G.sector(r_mid(G.H_CONE) / G.SIN_A, r_mid(0) / G.SIN_A, G.THETA)
+    sh, cp = G.shell("SHELL", "SHELL-5MM", 0.0, G.H_CONE), G.coupon()
     inside = [p for p in G.build_parts() if not p.key.startswith("SHELL")]
     rings = jig.parts()
-    return ([P("SHELL", "SHELL-5MM", [shell], "PIECE_5MM")],
+    thin = [P("SHELL", "SHELL-5MM", sh.loops, "PIECE_5MM"), P("COUPON", "BEND-TEST", cp.loops, "PIECE_5MM")]
+    for p in thin:                 # loops[0] = outline, the rest = kerf pockets
+        p.kerfs = len(p.loops) - 1
+    return (thin,
             [P(p.key, p.label, p.loops, "GABARIT_INTERIEUR_18MM") for p in inside] +
             [P(r.key, r.label, r.loops, "GABARIT_BAGUES_18MM") for r in rings])
 
@@ -77,7 +86,7 @@ def main() -> int:
 
     doc = ezdxf.new("R2010", setup=True)
     doc.units = ezdxf.units.MM
-    for name, col in (("PIECE_5MM", 1), ("GABARIT_INTERIEUR_18MM", 5), ("GABARIT_BAGUES_18MM", 3),
+    for name, col in (("PIECE_5MM", 1), (KERF_LAYER, 6), ("GABARIT_INTERIEUR_18MM", 5), ("GABARIT_BAGUES_18MM", 3),
                       ("PLANCHE_5MM", 8), ("PLANCHE_18MM", 8)):
         doc.layers.add(name, color=col)
     msp = doc.modelspace()
@@ -88,11 +97,17 @@ def main() -> int:
         by = {p.key: p for p in group}
         mats = []
         for pl in placed:
-            for loop in pl.loops:
+            part = by[pl.key]
+            nk = getattr(part, "kerfs", 0)
+            cuts = pl.loops[:len(pl.loops) - nk]
+            for loop in cuts:
                 msp.add_lwpolyline([(x, y + oy, b) for x, y, b in loop], format="xyb", close=True,
-                                   dxfattribs={"layer": by[pl.key].layer})
-            m = Polygon(L.flatten_loop(pl.loops[0]))
-            for h in pl.loops[1:]:
+                                   dxfattribs={"layer": part.layer})
+            if nk:                 # pockets run out through the edges (V9 lip fix)
+                for poly in build.kerf_polys(pl.loops[len(pl.loops) - nk:], oy):
+                    msp.add_lwpolyline(poly, format="xy", close=True, dxfattribs={"layer": KERF_LAYER})
+            m = Polygon(L.flatten_loop(cuts[0]))
+            for h in cuts[1:]:
                 m = m.difference(Polygon(L.flatten_loop(h)))
             mats.append(m)
         close = min((mats[i].distance(mats[j]) for i in range(len(mats))
@@ -101,11 +116,19 @@ def main() -> int:
             fails.append(f"{title}: parts {close:.1f} mm apart")
         print(f"board {title}: {len(placed)} parts, closest {close:.1f} mm")
 
-    # the skin closes exactly: arc length of the flat sector = mid circumference
-    s_out, s_in = r_mid(0) / G.SIN_A, r_mid(G.H_CONE) / G.SIN_A
+    # the show face closes exactly: arc length of the flat sector = outer circumference
+    s_out, s_in = G.s_of(0.0), G.s_of(G.H_CONE)
     for z, s in ((0.0, s_out), (G.H_CONE, s_in)):
-        if abs(G.THETA * s - 2 * math.pi * r_mid(z)) > 1e-6:
+        if abs(G.THETA * s - 2 * math.pi * G.R(z)) > 1e-6:
             fails.append(f"skin does not close at z={z}")
+    lay = G.kerf_layout(s_in, s_out)
+    n_full = sum(1 for _, r0, _ in lay if r0 == s_in)
+    per = G.closure_total() / n_full
+    print(f"kerfs: {len(lay)} ({n_full} full length), {G.DEPTH:g} mm deep x {G.TOOL_D:g} mm, "
+          f"{SKIN_LEFT:g} mm skin; back face closes {G.closure_total():.1f} mm in total, "
+          f"~{per:.2f} mm per full kerf")
+    if per >= G.TOOL_D:
+        fails.append("kerfs cannot close enough")
     # formers sit just inside the skin, rings just outside
     f = {p.key: p for p in thick}
     # a straight-edged 18 mm disc in a cone: it fits at its TOP face (fit gap),
@@ -121,7 +144,7 @@ def main() -> int:
     if not (0 < gap_in <= G.FIT + 1e-6):
         fails.append(f"base former gap {gap_in:.2f}")
 
-    path = OUT / "CONE_5MM_piece_et_gabarit.dxf"
+    path = OUT / "CONE_5MM_KERF_piece_et_gabarit.dxf"
     doc.saveas(path)
     r = subprocess.run([sys.executable, str(HERE.parents[0] / "tools" / "artcam_dxf.py"), str(path)],
                        capture_output=True, text=True)
