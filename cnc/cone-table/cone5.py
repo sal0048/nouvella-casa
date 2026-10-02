@@ -37,10 +37,24 @@ sys.path.append(str(HERE.parents[0] / "curved-sofa"))
 import table_geometry as G
 
 SKIN = 5.0                        # board thickness of the shell
-SKIN_LEFT = 1.5                   # wood kept under the show face (ASSUMED: check on the coupon)
+SKIN_LEFT = 1.0                   # wood kept under the show face (V2: was 1.5, it cracked)
+TOP_D = 240.0                     # V2: was 160 - too tight a radius for kerfed MDF
+KERF_LAND = 3.0                   # V2: was 6 - wood between kerfs, pitch 9 at the top
+MAX_STRAIN = 0.0065               # MDF skin: keep the bending strain under ~0.65 %
 G.T_SHELL = SKIN                  # formers and core follow the thinner skin
 G.SKIN = SKIN_LEFT
-G.DEPTH = SKIN - SKIN_LEFT        # 3.5 mm kerf pockets
+G.DEPTH = SKIN - SKIN_LEFT        # 4 mm kerf pockets
+# V1 (top 160, skin 1.5, pitch 12) cracked in the workshop: each kerf had to
+# hinge 8.3 deg and the 1.5 mm skin stretched ~1.8 %. Skin strain over a kerf is
+#   e = skin * (2 pi cos(alpha) / n_kerfs) / (2 * kerf_width)
+# so it falls with a thinner skin, more kerfs (narrow lands) and a bigger top.
+G.R_TOP = TOP_D / 2
+G.SLANT = math.hypot(G.H_CONE, G.R_BOT - G.R_TOP)
+G.SIN_A = (G.R_BOT - G.R_TOP) / G.SLANT
+G.COS_A = G.H_CONE / G.SLANT
+G.THETA = 2.0 * math.pi * G.SIN_A
+G.KERF_LAND = KERF_LAND
+G.KERF_PITCH_MIN = G.TOOL_D + KERF_LAND
 KERF_LAYER = f"POCHE_KERF_{G.DEPTH:g}MM"
 
 import ezdxf                      # noqa: E402
@@ -129,6 +143,12 @@ def main() -> int:
           f"~{per:.2f} mm per full kerf")
     if per >= G.TOOL_D:
         fails.append("kerfs cannot close enough")
+    hinge = 2 * math.pi * G.COS_A / n_full                     # rad per kerf
+    strain = SKIN_LEFT * hinge / (2 * G.TOOL_D)
+    print(f"skin over each kerf hinges {math.degrees(hinge):.1f} deg: strain {100 * strain:.2f} % "
+          f"(limit {100 * MAX_STRAIN:.2f} %; V1 was 1.81 % and cracked)")
+    if strain > MAX_STRAIN:
+        fails.append(f"skin strain {100 * strain:.2f} % too high")
     # formers sit just inside the skin, rings just outside
     f = {p.key: p for p in thick}
     # a straight-edged 18 mm disc in a cone: it fits at its TOP face (fit gap),
@@ -144,7 +164,7 @@ def main() -> int:
     if not (0 < gap_in <= G.FIT + 1e-6):
         fails.append(f"base former gap {gap_in:.2f}")
 
-    path = OUT / "CONE_5MM_KERF_piece_et_gabarit.dxf"
+    path = OUT / "CONE_5MM_KERF_V2_piece_et_gabarit.dxf"
     doc.saveas(path)
     r = subprocess.run([sys.executable, str(HERE.parents[0] / "tools" / "artcam_dxf.py"), str(path)],
                        capture_output=True, text=True)
