@@ -1,0 +1,494 @@
+{
+  "product": "PEBBLE_SOFA",
+  "status": "CAD_COMPLETE_NOT_VALIDATED",
+  "status_reason": "all automated checks pass, but CNC_BIT_DIAMETER and MATERIAL_THICKNESS are unconfirmed and change the cut geometry",
+  "physical_test": "NOT_PERFORMED",
+  "fit": "UNTESTED_FIT",
+  "checks_passed": 93,
+  "checks_failed": 0,
+  "checks": [
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "01 BASE-RING-L: 26 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "02 SEAT-RING-L: 26 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "03 RIB-LA: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "04 RIB-LB: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "05 RIB-LC: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "06 RIB-LD: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "07 RIB-LE: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "08 RIB-LF: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "09 BASE-RING-R: 30 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "10 SEAT-RING-R: 30 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "11 RIB-RA: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "12 RIB-RB: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "13 RIB-RC: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "14 RIB-RD: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "15 RIB-RE: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "16 RIB-RF: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "17 RIB-RG: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "18 PEBBLE-BL-PLATE: 17 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "19 PEBBLE-BL-RIB1: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "20 PEBBLE-BL-RIB2: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "21 PEBBLE-BL-RIB3: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "22 PEBBLE-BL-SPINE: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "23 PEBBLE-EL-PLATE: 6 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "24 PEBBLE-EL-RIB1: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "25 PEBBLE-EL-SPINE: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "26 PEBBLE-BR-PLATE: 20 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "27 PEBBLE-BR-RIB1: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "28 PEBBLE-BR-RIB2: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "29 PEBBLE-BR-RIB3: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "30 PEBBLE-BR-SPINE: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "31 PEBBLE-AR-PLATE: 9 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "32 PEBBLE-AR-RIB1: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "33 PEBBLE-AR-RIB2: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "34 PEBBLE-AR-SPINE: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[2] joints (Tokyo rule: 19 x 41 mortise for 18 mm board, 40 mm tab)",
+      "passed": true,
+      "message": "mortise 41 x 19 mm, tab 40 mm, board 18 mm"
+    },
+    {
+      "section": "[2] joints (Tokyo rule: 19 x 41 mortise for 18 mm board, 40 mm tab)",
+      "passed": true,
+      "message": "152 mortises, all 19 x 41 mm: {(19.0, 41.0): 152}"
+    },
+    {
+      "section": "[2] joints (Tokyo rule: 19 x 41 mortise for 18 mm board, 40 mm tab)",
+      "passed": true,
+      "message": "relief R3.2 clears a 6 mm cutter"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "01 BASE-RING-L: 0 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "02 SEAT-RING-L: 0 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "03 RIB-LA: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "04 RIB-LB: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "05 RIB-LC: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "06 RIB-LD: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "07 RIB-LE: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "08 RIB-LF: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "09 BASE-RING-R: 0 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "10 SEAT-RING-R: 0 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "11 RIB-RA: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "12 RIB-RB: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "13 RIB-RC: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "14 RIB-RD: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "15 RIB-RE: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "16 RIB-RF: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "17 RIB-RG: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "18 PEBBLE-BL-PLATE: 0 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "19 PEBBLE-BL-RIB1: 6 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "20 PEBBLE-BL-RIB2: 6 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "21 PEBBLE-BL-RIB3: 6 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "22 PEBBLE-BL-SPINE: 22 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "23 PEBBLE-EL-PLATE: 0 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "24 PEBBLE-EL-RIB1: 6 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "25 PEBBLE-EL-SPINE: 6 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "26 PEBBLE-BR-PLATE: 0 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "27 PEBBLE-BR-RIB1: 6 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "28 PEBBLE-BR-RIB2: 6 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "29 PEBBLE-BR-RIB3: 6 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "30 PEBBLE-BR-SPINE: 26 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "31 PEBBLE-AR-PLATE: 0 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "32 PEBBLE-AR-RIB1: 6 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "33 PEBBLE-AR-RIB2: 6 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "34 PEBBLE-AR-SPINE: 10 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[4] nesting",
+      "passed": true,
+      "message": "sheet 1: 13 parts, closest 14.0 mm apart, all inside the 9 mm edge"
+    },
+    {
+      "section": "[4] nesting",
+      "passed": true,
+      "message": "sheet 2: 18 parts, closest 14.0 mm apart, all inside the 9 mm edge"
+    },
+    {
+      "section": "[4] nesting",
+      "passed": true,
+      "message": "sheet 3: 20 parts, closest 14.0 mm apart, all inside the 9 mm edge"
+    },
+    {
+      "section": "[4] nesting",
+      "passed": true,
+      "message": "sheet 4: 29 parts, closest 13.3 mm apart, all inside the 9 mm edge"
+    },
+    {
+      "section": "[4] nesting",
+      "passed": true,
+      "message": "every part placed its full quantity (80 pieces)"
+    },
+    {
+      "section": "[5] labels",
+      "passed": true,
+      "message": "80 pieces labelled"
+    },
+    {
+      "section": "[5] labels",
+      "passed": true,
+      "message": "every label sits on material, 4 mm from any cut"
+    },
+    {
+      "section": "[6] built DXF",
+      "passed": true,
+      "message": "units = mm"
+    },
+    {
+      "section": "[6] built DXF",
+      "passed": true,
+      "message": "236 closed CUT profiles (expected 236)"
+    },
+    {
+      "section": "[6] built DXF",
+      "passed": true,
+      "message": "80 ENGRAVE-LABEL texts"
+    },
+    {
+      "section": "[6] built DXF",
+      "passed": true,
+      "message": "no duplicate CUT profiles (0 found)"
+    },
+    {
+      "section": "[6] built DXF",
+      "passed": true,
+      "message": "longest part 1626 mm fits the sheet"
+    },
+    {
+      "section": "[3D-1] interference",
+      "passed": true,
+      "message": "145 neighbouring pairs, 0 interpenetrate"
+    },
+    {
+      "section": "[3D-2] every mortise holds a tab",
+      "passed": true,
+      "message": "152/152 mortises filled"
+    },
+    {
+      "section": "[3D-3] load path",
+      "passed": true,
+      "message": "module L: 24/24 body ribs bear on both rings"
+    },
+    {
+      "section": "[3D-3] load path",
+      "passed": true,
+      "message": "module R: 28/28 body ribs bear on both rings"
+    },
+    {
+      "section": "[3D-3] load path",
+      "passed": true,
+      "message": "pebble BL: plate on the seat ring, 5 ribs + spine on the plate, egg-crate engaged"
+    },
+    {
+      "section": "[3D-3] load path",
+      "passed": true,
+      "message": "pebble EL: plate on the seat ring, 2 ribs + spine on the plate, egg-crate engaged"
+    },
+    {
+      "section": "[3D-3] load path",
+      "passed": true,
+      "message": "pebble BR: plate on the seat ring, 6 ribs + spine on the plate, egg-crate engaged"
+    },
+    {
+      "section": "[3D-3] load path",
+      "passed": true,
+      "message": "pebble AR: plate on the seat ring, 3 ribs + spine on the plate, egg-crate engaged"
+    },
+    {
+      "section": "[3D-4] assembly sequence: every piece comes down vertically",
+      "passed": true,
+      "message": "80 pieces lowered in order BASE > BODY > SEAT > PLATE > PRIB > SPINE, 0 blocked"
+    },
+    {
+      "section": "[3D-5] overall size",
+      "passed": true,
+      "message": "frame 3039 x 1062 x 668 mm on z = 0"
+    }
+  ],
+  "open_inputs": [
+    {
+      "parameter": "CNC_BIT_DIAMETER",
+      "question": "What cutter diameter will cut this job? (dogbones assume 6 mm)"
+    },
+    {
+      "parameter": "MATERIAL_THICKNESS",
+      "question": "Caliper the real sheet in 3 places (nominal 18 mm)."
+    },
+    {
+      "parameter": "SHEET_SIZE",
+      "question": "Confirm the sheet size from your supplier (2440 x 1220 assumed)."
+    },
+    {
+      "parameter": "HEIGHTS",
+      "question": "Seat 330 frame (~440 finished) and pebble heights are our choice: confirm."
+    }
+  ]
+}
