@@ -210,7 +210,9 @@ def assembly(w, frames):
     return Image.open(frames / f"f_{last:04d}.png").convert("RGB").resize((W, H), Image.LANCZOS)
 
 
-def upholster(w, frames, secs=4.5):
+def upholster(w, frames, last, secs=5.0):
+    for i in range(12):                                   # dissolve from the orbit to the hero pose
+        w.put(Image.blend(last, Image.open(frames / "still_frame.png").convert("RGB").resize((W, H)), i / 12))
     a = Image.open(frames / "still_frame.png").convert("RGB").resize((W, H), Image.LANCZOS)
     b = Image.open(frames / "still_upholstered.png").convert("RGB").resize((W, H), Image.LANCZOS)
     n = int(secs * FPS)
@@ -309,8 +311,8 @@ def main():
     w = Writer(out)
     title(w)
     cutting(w)
-    assembly(w, frames)
-    upholster(w, frames)
+    last = assembly(w, frames)
+    upholster(w, frames, last)
     ok, tot = proof(w, checks)
     end(w)
     w.close()

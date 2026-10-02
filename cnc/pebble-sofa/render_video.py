@@ -6,8 +6,8 @@ Every piece is the exact cut geometry (pebble_geometry.instances()) and comes
 down vertically in GROUP_ORDER, the same motion verify_3d.py [3D-4] proves is
 clash-free. A piece is terracotta while it moves and turns birch once seated.
 Writes OUT_DIR/f_0000.png ... plus timeline.json (frame -> group, pieces seated)
-for the overlay pass (video_compose.py), and the two stills for the
-frame -> upholstered crossfade.
+for the overlay pass (video_compose.py), and with --stills (or --stills-only)
+the two hero stills for the frame -> upholstered crossfade.
 """
 
 from __future__ import annotations
@@ -90,7 +90,7 @@ def main():
     start, end, groups = schedule(inst)
     total = end + HOLD + ORBIT
     timeline = []
-    only = set(range(arg("--from", 0), arg("--to", total)))
+    only = set() if "--stills-only" in sys.argv else set(range(arg("--from", 0), arg("--to", total)))
     for f in range(total):
         seated = 0
         for n, (ob, home) in enumerate(obs):
@@ -113,9 +113,10 @@ def main():
             print(f"frame {f + 1}/{total}", flush=True)
     (out / "timeline.json").write_text(json.dumps({"fps": arg("--fps", 15), "groups": groups,
                                                    "frames": timeline}, indent=0))
-    if "--stills" in sys.argv:
-        # last camera pose: bare frame, then the upholstered sofa for the crossfade
+    if "--stills" in sys.argv or "--stills-only" in sys.argv:
+        # hero pose of render_blender's upholstered view: bare frame, then the upholstered sofa
         sc.cycles.samples = 48
+        camera_at(cam, target, -70.0, 14.0, 5.4, 0.38)
         sc.render.filepath = str(out / "still_frame.png")
         bpy.ops.render.render(write_still=True)
         for ob, _ in obs:
