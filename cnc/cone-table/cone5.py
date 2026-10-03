@@ -34,7 +34,11 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 sys.path.append(str(HERE.parents[0] / "curved-sofa"))
 
+import joints as J
 import table_geometry as G
+
+G.T_BOARD = 18.0                  # this variant's gabarit stays on 18 mm (the V10 cone is 17)
+G.JOINT = J.JointSpec(t=G.T_BOARD, fit=1.0, tool_d=G.TOOL_D)
 
 SKIN = 5.0                        # board thickness of the shell
 SKIN_LEFT = 1.0                   # wood kept under the show face (V2: was 1.5, it cracked)

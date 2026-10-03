@@ -76,10 +76,12 @@ def dxf_parts(path):
             outers.append([g, []])
         else:
             host[1].append(g)
+    # a pocket belongs to the part it overlaps most (seam pockets lie mostly outside it)
+    owner = [max(range(len(outers)), key=lambda i: q.intersection(outers[i][0]).area) for q in pockets]
     parts = []
-    for o, holes in outers:
+    for i, (o, holes) in enumerate(outers):
         body = o.difference(unary_union(holes)) if holes else o
-        pk = [q for q in pockets if o.contains(q.representative_point())]
+        pk = [q for q, k in zip(pockets, owner) if k == i]
         parts.append((body, unary_union(pk) if pk else None))
     return parts
 
@@ -159,8 +161,8 @@ def main():
         label = Path(f).stem.split("_")[1]
         if label in ref:
             compare(f, {label: 1}, ref)
-    compare(HERE / "out" / "CONE_18MM_CUT.dxf", {k: v[2] for k, v in ref.items()}, ref)
-    compare(HERE / "out" / "CONE_18MM_CUT_x2.dxf", {k: 2 * v[2] for k, v in ref.items()}, ref)
+    compare(HERE / "out" / f"CONE_{T.T_SHELL:g}MM_CUT.dxf", {k: v[2] for k, v in ref.items()}, ref)
+    compare(HERE / "out" / f"CONE_{T.T_SHELL:g}MM_CUT_x2.dxf", {k: 2 * v[2] for k, v in ref.items()}, ref)
     print(f"\nRESULT: {'OK, the DXF is the verified 3D' if not fails else f'{len(fails)} problem(s)'}")
     for x in fails:
         print("  FAIL", x)

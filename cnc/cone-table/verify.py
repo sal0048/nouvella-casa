@@ -72,22 +72,27 @@ def main() -> int:
             pitches.append(pitch)
             r_face = sv * T.SIN_A / T.COS_A       # R / cos(alpha)
             worst_hinge = min(worst_hinge, T.TOOL_D * r_face / pitch)
-        per = need / m["n_full"]
+        per = need / m["n_hinge"]
         check(per < T.TOOL_D, f"{p.label}: each kerf closes at most {per:.2f} mm of its "
                               f"{T.TOOL_D:.0f} mm width (back face never jams)")
-        check(min(pitches) - T.TOOL_D >= 4.0,
-              f"{p.label}: {m['n_full']} full + {m['n_kerf'] - m['n_full']} short kerfs, "
-              f"wood between kerfs {min(pitches) - T.TOOL_D:.1f}-{max(pitches) - T.TOOL_D:.1f} mm")
-        a0 = math.pi / 2 - T.THETA / 2
-        first = min(a for a, _, _ in lay)
-        strip = (first - a0) * m["s_in"] - T.TOOL_D / 2
-        check(strip >= T.KERF_LAND - 0.01, f"{p.label}: {strip:.1f} mm of wood between each "
-                                           f"seam edge and its first kerf (narrow end)")
+        check(all(r0 == m["s_in"] and r1 == m["s_out"] for _, r0, r1 in lay),
+              f"{p.label}: all {len(lay)} kerfs run the full length, bottom edge to top edge")
+        check(min(pitches) - T.TOOL_D >= T.KERF_LAND - 0.01,
+              f"{p.label}: wood between kerfs {min(pitches) - T.TOOL_D:.1f} mm at the top to "
+              f"{max(pitches) - T.TOOL_D:.1f} mm at the floor")
+        hinge = T.hinge_angle(m["s_in"])
+        strain = T.SKIN * hinge / (2 * T.TOOL_D)
+        check(strain <= 0.022, f"{p.label}: {m['n_hinge']} hinges (kerfs + seam) of "
+                               f"{math.degrees(hinge):.2f} deg each, the same at every height; skin "
+                               f"strain {100 * strain:.2f} % (V9: 3.0 % plus short-kerf ends, cracked)")
+        relief = T.seam_relief(m["s_in"])
+        check(relief >= T.T_SHELL * math.tan(hinge / 2),
+              f"{p.label}: seam edges relieved {relief:.2f} mm on the back, so they close like a kerf")
         note(f"{p.label}: skin {T.SKIN} mm bends at ~R{worst_hinge:.0f} over each kerf at worst "
              f"(strain ~{T.SKIN / 2 / worst_hinge * 100:.1f}%) - confirm with the bend-test coupon")
     check(T.SKIN >= 2.0 and T.DEPTH > 0, f"pocket depth {T.DEPTH:g} mm leaves a "
                                          f"{T.SKIN:g} mm skin on {T.T_SHELL:g} mm board")
-    check(T.KERF_OVERRUN >= T.TOOL_D / 2, "full kerfs run out through both curved edges, short ones through the wide edge")
+    check(T.KERF_OVERRUN >= T.TOOL_D / 2, "kerfs run out through both curved edges")
 
     section("[4] formers and collar sit where they should")
     for k in ("FBASE", "FJLO", "FJUP", "FTOP"):

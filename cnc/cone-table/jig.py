@@ -110,7 +110,7 @@ def main() -> int:
     doc.saveas(path)
     for p in ps:
         print(f"  {tag(p):38s} outer {2 * (p.r_in + RING_W):.1f}  {p.note}")
-    print(f"wrote {path}: {len(ps)} rings on {used[0]:.0f} x {used[1]:.0f} mm of MDF 18, "
+    print(f"wrote {path}: {len(ps)} rings on {used[0]:.0f} x {used[1]:.0f} mm of MDF {G.T_BOARD:g}, "
           f"closest {min(gaps):.1f} mm apart")
     preview(ps, OUT / "cone_jig_preview.png")
     r = subprocess.run([sys.executable, str(HERE.parents[0] / "tools" / "artcam_dxf.py"), str(path)],
@@ -129,12 +129,12 @@ def preview(ps, path):
     Rb, Rt, H = G.R_BOT, G.R_TOP, G.H_CONE
     ax.fill([-Rb, Rb, Rt, -Rt], [0, 0, H, H], color="#d8b98f", ec="#6b4f2a", lw=1.2)
     for z in (0.0, G.Z_SPLIT, H):
-        ax.plot([-G.R(z) + 18, G.R(z) - 18], [z, z], color="#8a6a3f", lw=1, ls="--")
+        ax.plot([-G.R(z) + G.T_BOARD, G.R(z) - G.T_BOARD], [z, z], color="#8a6a3f", lw=1, ls="--")
     for p in ps:
         z = p.z
         for s in (-1, 1):
             ax.add_patch(plt.Rectangle((s * p.r_in if s > 0 else -p.r_in - RING_W, z),
-                                       RING_W, 18, color="#c8462a"))
+                                       RING_W, G.T_BOARD, color="#c8462a"))
         ax.text(p.r_in + RING_W + 12, z + 9, f"{p.label}  Ø{2 * p.r_in:.0f}  z{z:g}",
                 va="center", fontsize=9)
     ax.set_aspect("equal")

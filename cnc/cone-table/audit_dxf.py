@@ -17,8 +17,14 @@ from collections import defaultdict
 
 import ezdxf
 from shapely.geometry import LineString, Polygon
+from pathlib import Path
 
-BOARD = 18.0
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.append(str(Path(__file__).resolve().parents[1] / "curved-sofa"))
+import table_geometry as T  # noqa: E402
+
+BOARD = T.T_SHELL                 # the board the kerfed shell is cut from
+SKIN = T.SKIN
 
 
 def loop_points(e, seg=0.5):
@@ -93,8 +99,8 @@ def audit(path):
     if depth is not None:
         skin = BOARD - depth
         print(f"   pocket depth {depth} mm -> skin {skin:g} mm on {BOARD:g} mm board")
-        if abs(skin - 2.5) > 1e-6:
-            fails.append(f"pocket depth {depth} mm is for another board: on 18 mm it leaves {skin:g} mm")
+        if abs(skin - SKIN) > 1e-6:
+            fails.append(f"pocket depth {depth} mm is for another board: on {BOARD:g} mm it leaves {skin:g} mm")
 
     cuts = [(e, Polygon(loop_points(e))) for e in layers.get("CUT", [])]
     pockets = [Polygon(loop_points(e)) for e in layers.get(pocket_layers[0], [])] if pocket_layers else []
@@ -104,15 +110,15 @@ def audit(path):
     boards = [Polygon(loop_points(e)) for l, v in layers.items() if l.startswith("BOARD") for e in v]
     outers = [p for _, p in cuts if not any(q.contains(p.representative_point()) and q.area > p.area
                                              for _, q in cuts)]
-    hits = 0
+    hits, near = 0, float("inf")
     for q in pockets:
-        own = next((p for p in outers if p.contains(q.representative_point())), None)
+        # the part a pocket belongs to is the one it overlaps most (seam pockets lie mostly outside)
+        own = max(outers, key=lambda p: q.intersection(p).area, default=None)
         others = [p for p in outers if p is not own]
+        near = min([near] + [q.distance(p) for p in others])
         if any(q.intersects(p) for p in others) or (boards and not boards[0].buffer(1e-6).contains(q)):
             hits += 1
     if pockets:
-        near = min((q.distance(p) for q in pockets for p in outers
-                    if not p.contains(q.representative_point())), default=float("inf"))
         print(f"   pockets vs other parts / board: {hits} touch; closest other part {near:.1f} mm")
         if hits:
             fails.append(f"{hits} kerf pockets cut into another part or off the board")

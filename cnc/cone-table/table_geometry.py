@@ -44,12 +44,12 @@ import joints as J  # noqa: E402
 # --------------------------------------------------------------------------
 # Parameters - provenance lives in package.py / parameters.json
 # --------------------------------------------------------------------------
-T_BOARD = 18.0           # core, formers, collar
-T_SHELL = 18.0           # kerf-bent shell board
-SKIN = 2.5               # material left on the show face under each kerf
+T_BOARD = 17.0           # core, formers, collar (V10: the workshop board is 17 mm)
+T_SHELL = 17.0           # kerf-bent shell board
+SKIN = 2.0               # material left on the show face under each kerf (V9: 2.5, cracked)
 TOOL_D = 6.0             # kerf width = cutter diameter
-KERF_LAND = 6.0          # wood left between two kerfs at the top edge (NL CNC "zig-zag spacing")
-KERF_PITCH_MIN = TOOL_D + KERF_LAND      # 12 mm pitch at the tightest edge
+KERF_LAND = 4.0          # least wood between two kerfs, at the narrow (top) edge
+KERF_PITCH_MIN = TOOL_D + KERF_LAND      # 10 mm: least pitch, at the narrow edge
 KERF_OVERRUN = 3.0       # the cutter CENTRE runs this far past a curved edge
 KERF_TRIM = 0.5          # pocket drawn this far inside the outline (nesting sees the outline);
                          # build.py adds KERF_TRIM + TOOL_D/2 + KERF_OVERRUN so the round
@@ -146,37 +146,51 @@ def sector(s_in: float, s_out: float, theta: float) -> Loop:
 
 
 def kerf_count(s_in: float) -> int:
-    return math.ceil(THETA * s_in / KERF_PITCH_MIN)
+    """Hinges round the cone: the kerfs plus the seam, which bends like one."""
+    return math.floor(THETA * s_in / (TOOL_D + KERF_LAND))
+
+
+def hinge_angle(s_in: float) -> float:
+    """Bend each hinge takes (rad). Every kerf is a generatrix of the cone,
+    so this is the same at every height: a kerf must run the full length.
+    (V9 added short kerfs on the wide half; where they stopped, the hinge
+    angle halved abruptly and the shell cracked there.)"""
+    return 2.0 * math.pi * COS_A / kerf_count(s_in)
+
+
+def seam_relief(s_in: float) -> float:
+    """Back-face strip taken off each seam edge so the two edges close like
+    a kerf: each side turns half a hinge about the show face."""
+    return T_SHELL * math.tan(hinge_angle(s_in) / 2) + 0.1
 
 
 def kerf_layout(s_in: float, s_out: float) -> list:
-    """(angle, r0, r1) of every kerf. Full-length kerfs keep KERF_LAND of
-    wood to the seam edges and at most KERF_PITCH_MIN between them at the
-    narrow edge. Wherever the pitch has doubled, a shorter kerf is added
-    midway, running out to the wide edge, so the pitch stays between
-    KERF_PITCH_MIN and twice that along the whole sector."""
+    """(angle, r0, r1) of every kerf: all full length, equal angles, the
+    seam counted as one hinge (half a pitch of wood each side of it)."""
     a0 = math.pi / 2 - THETA / 2
-    edge = (KERF_LAND + TOOL_D / 2) / s_in          # seam strip, as an angle
-    span = THETA - 2 * edge
-    n = math.ceil(span * s_in / KERF_PITCH_MIN) + 1
-    angles = [a0 + edge + span * k / (n - 1) for k in range(n)]
-    out = [(a, s_in, s_out) for a in angles]
-    step = span / (n - 1)
-    while True:
-        s_start = 2 * KERF_PITCH_MIN / step          # halved pitch = min here
-        if s_start >= s_out - 2 * KERF_PITCH_MIN:
-            break
-        mids = [(a + b) / 2 for a, b in zip(angles, angles[1:])]
-        out += [(a, s_start, s_out) for a in mids]
-        angles = sorted(angles + mids)
-        step /= 2
-    return sorted(out)
+    n = kerf_count(s_in)
+    return [(a0 + THETA * k / n, s_in, s_out) for k in range(1, n)]
+
+
+def seam_rects(s_in: float, s_out: float, trim: float = KERF_TRIM) -> list:
+    """Seam-edge pockets, back face, same depth as the kerfs: seam_relief()
+    inside each straight edge and run out past it so the strip is one
+    cutter wide (build.py extends them through both curved edges too)."""
+    w_in, w_out = seam_relief(s_in), TOOL_D - seam_relief(s_in)
+    out = []
+    for a, sign in ((math.pi / 2 - THETA / 2, 1.0), (math.pi / 2 + THETA / 2, -1.0)):
+        c, s = math.cos(a), math.sin(a)
+        nx, ny = -s * sign, c * sign                # into the part
+        r0, r1 = s_in + trim, s_out - trim
+        pts = [(r0, -w_out), (r0, w_in), (r1, w_in), (r1, -w_out)]   # kerf_rects corner order
+        out.append([(r * c + d * nx, r * s + d * ny, 0.0) for r, d in pts])
+    return out
 
 
 def kerf_rects(s_in: float, s_out: float, trim: float = KERF_TRIM) -> list:
     """Kerf pockets as rectangles along the generatrices, kept KERF_TRIM
-    inside the outline for nesting (build.py extends them through the
-    edges; the short kerfs keep their inner, round-ended stop)."""
+    inside the outline for nesting (build.py extends them through both
+    curved edges)."""
     hw = TOOL_D / 2.0
     out = []
     for a, r0, r1 in kerf_layout(s_in, s_out):
@@ -193,15 +207,14 @@ def kerf_rects(s_in: float, s_out: float, trim: float = KERF_TRIM) -> list:
 
 def shell(key, label, za, zb) -> Part:
     s_out, s_in = s_of(za), s_of(zb)
-    kerfs = kerf_rects(s_in, s_out)
+    kerfs = kerf_rects(s_in, s_out) + seam_rects(s_in, s_out)
     n = len(kerfs)
     loops = [sector(s_in, s_out, THETA)] + kerfs
     return Part(key, label, 1, loops,
                 f"cone shell z {za:.0f}-{zb:.0f}, kerfs on the back face",
                 material=f"{T_SHELL:g}", kerfs=n,
                 meta=dict(za=za, zb=zb, s_in=s_in, s_out=s_out, n_kerf=n,
-                          n_full=sum(1 for _, r0, _ in kerf_layout(s_in, s_out)
-                                     if r0 == s_in)))
+                          n_full=len(kerf_layout(s_in, s_out)), n_hinge=kerf_count(s_in)))
 
 
 def former_radius(z0: float, z1: float) -> float:
