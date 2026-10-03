@@ -89,7 +89,7 @@ def assembly():
         s = wall(m["za"], m["zb"])
         s.label = parts[k].label
         items.append(s)
-    for k in ("FBASE", "FJLO", "FJUP", "FTOP"):
+    for k in [k for k in ("FBASE", "FJLO", "FJUP", "FTOP") if k in parts]:
         p = parts[k]
         s = Location((0, 0, p.meta["z0"])) * flat(p.loops, T.T_BOARD)
         s.label = p.label
@@ -132,22 +132,24 @@ def main():
     sec = "[3D-2] load path: every part bears on what carries it"
     print(f"\n{sec}")
     d = lambda a, b: by[a].distance_to(by[b])
-    rows = [("CORE-1A", "FORMER-BASE"), ("CORE-1B", "FORMER-BASE"),
-            ("CORE-1A", "FORMER-JOINT-LO"), ("CORE-1B", "FORMER-JOINT-LO"),
-            ("FORMER-JOINT-UP", "FORMER-JOINT-LO"),
-            ("CORE-2A", "FORMER-JOINT-UP"), ("CORE-2B", "FORMER-JOINT-UP"),
-            ("CORE-2A", "FORMER-TOP"), ("CORE-2B", "FORMER-TOP"),
-            ("CORE-1A", "CORE-1B"), ("CORE-2A", "CORE-2B")]
+    plan, levels, below, above = T.former_plan()
+    rows = []
+    for lv in range(1, len(levels) + 1):
+        for t in "AB":
+            rows += [(f"CORE-{lv}{t}", plan[below[lv]][0]), (f"CORE-{lv}{t}", plan[above[lv]][0])]
+        rows.append((f"CORE-{lv}A", f"CORE-{lv}B"))
+    if "FORMER-JOINT-UP" in by:
+        rows.append(("FORMER-JOINT-UP", "FORMER-JOINT-LO"))
     if "COLLAR" in by:
         rows.append(("COLLAR", "SHELL-LOW"))
     for a, b in rows:
         dist = d(a, b)
         check(sec, dist <= TOUCH, f"{a} bears on {b} (gap {dist:.3f} mm)")
     one = "SHELL" in by
-    for f, sh in (("FORMER-BASE", "SHELL" if one else "SHELL-LOW"),
+    for f, sh in [(f, s) for f, s in (("FORMER-BASE", "SHELL" if one else "SHELL-LOW"),
                   ("FORMER-JOINT-LO", "SHELL" if one else "SHELL-LOW"),
                   ("FORMER-JOINT-UP", "SHELL" if one else "SHELL-UP"),
-                  ("FORMER-TOP", "SHELL" if one else "SHELL-UP")):
+                  ("FORMER-TOP", "SHELL" if one else "SHELL-UP")) if f in by]:
         dist = d(f, sh)
         check(sec, dist <= T.FIT + 0.01, f"{f} holds {sh}: {dist:.2f} mm glue line")
 

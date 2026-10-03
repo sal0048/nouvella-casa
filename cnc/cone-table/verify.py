@@ -95,7 +95,7 @@ def main() -> int:
     check(0 < T.KERF_OVERRUN <= 0.5, "kerf pockets end with the cutter centre just past the edge: they leave the part by half a cutter only")
 
     section("[4] formers and collar sit where they should")
-    for k in ("FBASE", "FJLO", "FJUP", "FTOP"):
+    for k in [k for k in ("FBASE", "FJLO", "FJUP", "FTOP") if k in by]:
         m = by[k].meta
         tight = T.R_in(m["z1"]) - m["r"]
         loose = T.R_in(m["z0"]) - m["r"]
@@ -149,9 +149,8 @@ def main() -> int:
     section("[7] structural core")
     import joints as J
     cores = [p for p in parts if p.key.startswith("CORE")]
-    formers = {k: by[k] for k in ("FBASE", "FJLO", "FJUP", "FTOP")}
-    below = {1: "FBASE", 2: "FJUP"}
-    above = {1: "FJLO", 2: "FTOP"}
+    _, _, below, above = T.former_plan()
+    formers = {k: by[k] for k in ("FBASE", "FJLO", "FJUP", "FTOP") if k in by}
     for p in cores:
         m = p.meta
         lv = int(p.key[4])
@@ -177,31 +176,36 @@ def main() -> int:
         check(p.relieved >= 4 and worst < 0.5,
               f"{p.label}: {p.relieved} inside corners relieved, worst spot the cutter "
               f"cannot reach {worst:.2f} mm2")
-    for lv in (1, 2):
+    for lv in range(1, len(T.former_plan()[1]) + 1):
         a_, b_ = by[f"CORE{lv}A"].meta, by[f"CORE{lv}B"].meta
         check(a_["from_top"] and not b_["from_top"] and abs((a_["phi"] - b_["phi"]) % 180 - 90) < 1e-9,
               f"level {lv}: plates cross at 90 deg, half-laps meet at mid height "
               f"({(a_['za'] + a_['zb']) / 2:.0f} mm), slot {T.JOINT.slot_w:g} mm for {T.T_BOARD:g} mm board")
     for key, f in formers.items():
-        worst = min(f.meta["r"] - max(math.hypot(x, y) for x, y in L.flatten_loop(h))
-                    for h in f.loops[1:])
-        check(worst >= T.MORTISE_WEB - 0.05,
-              f"{f.label}: {len(f.loops) - 1} mortises, thinnest web to the rim {worst:.1f} mm")
+        rh = f.meta.get("r_hole", 0.0)
+        morts = f.loops[1 + (1 if rh else 0):]
+        worst = min(f.meta["r"] - max(math.hypot(x, y) for x, y in L.flatten_loop(h)) for h in morts)
+        inner = min((min(math.hypot(x, y) for x, y in L.flatten_loop(h)) - rh for h in morts), default=99) if rh else 99
+        check(min(worst, inner) >= T.MORTISE_WEB - 0.05,
+              f"{f.label}: {len(morts)} mortises, thinnest web {worst:.1f} mm to the rim"
+              + (f", {inner:.1f} mm to the ring's bore" if rh else ""))
     from shapely.affinity import rotate
     from shapely.geometry import box
     from shapely.ops import unary_union
-    holes_lo = unary_union([Polygon(L.flatten_loop(h)) for h in by["FJLO"].loops[1:]])
-    worst = 1.0
-    for k in ("CORE2A", "CORE2B"):
-        m = by[k].meta
-        for x0, x1 in m["bot"]:
-            foot = rotate(box(x0, -T.T_BOARD / 2, x1, T.T_BOARD / 2), m["phi"], origin=(0, 0))
-            worst = min(worst, 1 - foot.intersection(holes_lo).area / foot.area)
-    check(worst >= 0.8, f"level 2 turned 45 deg: every tab end sits >= {worst * 100:.0f}% "
-                        f"on solid JOINT-LO (>= 80%)")
+    if "FJLO" in by:
+        holes_lo = unary_union([Polygon(L.flatten_loop(h)) for h in by["FJLO"].loops[1:]])
+        worst = 1.0
+        for k in ("CORE2A", "CORE2B"):
+            m = by[k].meta
+            for x0, x1 in m["bot"]:
+                foot = rotate(box(x0, -T.T_BOARD / 2, x1, T.T_BOARD / 2), m["phi"], origin=(0, 0))
+                worst = min(worst, 1 - foot.intersection(holes_lo).area / foot.area)
+        check(worst >= 0.8, f"level 2 turned 45 deg: every tab end sits >= {worst * 100:.0f}% "
+                            f"on solid JOINT-LO (>= 80%)")
     # bearing: 150 kg standing on the top, carried by the top tabs of level 2
     # (the untabbed plate's top edge also bears under FORMER-TOP: ignored)
-    area = sum((x1 - x0) * T.T_BOARD for x0, x1 in by["CORE2A"].meta["top"] + by["CORE2B"].meta["top"])
+    top_lv = max(int(p.key[4]) for p in cores)
+    area = sum((x1 - x0) * T.T_BOARD for x0, x1 in by[f"CORE{top_lv}A"].meta["top"] + by[f"CORE{top_lv}B"].meta["top"])
     stress = 150 * 9.81 / area
     check(stress < 3.0, f"150 kg on the top: {stress:.2f} MPa on the core tab ends "
                         f"(< 3 MPa, conservative for MDF)")

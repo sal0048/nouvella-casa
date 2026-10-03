@@ -27,8 +27,8 @@ from shapely.geometry import Point, Polygon
 import jig
 import table_geometry as G
 
-FILE = HERE / "out" / "cone17" / "CONE_17MM_V10_piece_et_gabarit_ArtCAM_R12.dxf"
-MASTER = HERE / "out" / "cone17" / "CONE_17MM_V10_piece_et_gabarit.dxf"
+FILE = HERE / "out" / "cone17" / "CONE_17MM_V11_piece_et_gabarit_ArtCAM_R12.dxf"
+MASTER = HERE / "out" / "cone17" / "CONE_17MM_V11_piece_et_gabarit.dxf"
 TOL = 0.0005                         # prints as 0.000
 FAILS = []
 
@@ -203,9 +203,9 @@ def main() -> int:
     rings = sorted(circles, key=lambda c: -c[2])
     # formers: circles with mortises inside (polygons with 8+ corners inside)
     jig_r = sorted([2 * p.r_in for p in jig.parts()] + [2 * (p.r_in + jig.RING_W) for p in jig.parts()])
-    form_r = sorted(2 * G.former_radius(z0, z1) for z0, z1 in (
-        (0, G.T_BOARD), (G.Z_SPLIT - G.T_BOARD, G.Z_SPLIT), (G.Z_SPLIT, G.Z_SPLIT + G.T_BOARD),
-        (G.H_CONE - G.T_BOARD, G.H_CONE)))
+    plan = G.former_plan()[0]
+    form_r = sorted([2 * G.former_radius(z0, z1) for _, z0, z1, _, _ in plan.values()] +
+                    [2 * rh for *_, rh, _ in plan.values() if rh])
     found = sorted(2 * r for _, _, r in circles)
     want = sorted(jig_r + form_r)
     show(f"all {len(found)} circles (formers + jig rings) vs design diameters",
@@ -238,11 +238,7 @@ def main() -> int:
          zip(sorted(lengths), want)) if len(lengths) == len(want) else 99)
 
     print("\n[5] the shell meets the formers and the jig rings")
-    for z in (G.T_BOARD, G.Z_SPLIT, G.Z_SPLIT + G.T_BOARD, G.H_CONE):
-        pass
-    for (z0, z1), name in (((0, G.T_BOARD), "FORMER-BASE"), ((G.Z_SPLIT - G.T_BOARD, G.Z_SPLIT), "FORMER-JOINT-LO"),
-                           ((G.Z_SPLIT, G.Z_SPLIT + G.T_BOARD), "FORMER-JOINT-UP"),
-                           ((G.H_CONE - G.T_BOARD, G.H_CONE), "FORMER-TOP")):
+    for name, z0, z1, rh, _ in plan.values():
         r = G.former_radius(z0, z1)
         gap = G.R_in(z1) - r
         show(f"{name}: shell inner face {G.R_in(z1):.3f} - former {r:.3f} = 0.500 glue line", gap - G.FIT)

@@ -1,5 +1,5 @@
 [1] the ArtCAM file is the master drawing, unchanged (loop by loop)
-  97 loops in the ArtCAM file, 97 in the master
+  86 loops in the ArtCAM file, 86 in the master
   ok   worst loop difference (mean edge offset): +0.000 mm
 
 [2] shell: the flat sector closes the cone exactly
@@ -24,14 +24,12 @@
   ok   seam relief 2: 3.000 mm on the part vs 3.000: -0.000 mm
 
 [4] formers and core: tabs in mortises
-  ok   all 12 circles (formers + jig rings) vs design diameters: +0.000 mm
-  ok   16 mortises: width 18.000-18.000 vs board 17 + 1 mm slot clearance: +0.000 mm
-  ok   16 mortise lengths vs their core tabs + 1 mm: +0.000 mm
+  ok   all 11 circles (formers + jig rings) vs design diameters: +0.000 mm
+  ok   8 mortises: width 18.000-18.000 vs board 17 + 1 mm slot clearance: +0.000 mm
+  ok   8 mortise lengths vs their core tabs + 1 mm: +0.000 mm
 
 [5] the shell meets the formers and the jig rings
   ok   FORMER-BASE: shell inner face 177.873 - former 177.373 = 0.500 glue line: +0.000 mm
-  ok   FORMER-JOINT-LO: shell inner face 122.406 - former 121.906 = 0.500 glue line: +0.000 mm
-  ok   FORMER-JOINT-UP: shell inner face 117.873 - former 117.373 = 0.500 glue line: +0.000 mm
   ok   FORMER-TOP: shell inner face 62.406 - former 61.906 = 0.500 glue line: +0.000 mm
   ok   JIG-BASE: bore 401.000 = cone outer 400.000 at z 0 + 2 x 0.5: +0.000 mm
   ok   JIG-1: bore 340.000 = cone outer 340.000 at z 112.5: +0.000 mm

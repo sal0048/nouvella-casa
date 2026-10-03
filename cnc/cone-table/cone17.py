@@ -1,7 +1,13 @@
-"""Cone V10, all 17 mm: the kerfed shell, its bend-test coupon, the inside
-gabarit (formers + core) and the clamp rings, in ONE ArtCAM file.
+"""Cone V11, all 17 mm: the kerfed shell, its bend-test coupon, the inside
+gabarit (floor ring + one full-height cross + top disc) and the clamp
+rings, in ONE ArtCAM file.
 
-    python3 cone17.py     # out/cone17/CONE_17MM_V10_piece_et_gabarit(.dxf, _ArtCAM_R12, _lines)
+    python3 cone17.py     # out/cone17/CONE_17MM_V11_piece_et_gabarit(.dxf, _ArtCAM_R12, _lines)
+
+V11 (workshop: "the gabarit looks unstudied"): the skeleton of the proven
+conic-leg kits - a floor RING (60 mm band, not a full disc), ONE pair of
+crossing plates the full height (V10: two levels and two mid discs) and
+the top disc the table top screws into. The shell is unchanged from V10.
 
 What changed from V9 (it cracked, workshop: "the inside cutting is wrong"):
   * every kerf runs the full length, floor edge to top edge. On a cone each
@@ -38,7 +44,7 @@ import sofa_layout as L
 import table_geometry as G
 
 OUT = HERE / "out" / "cone17"
-NAME = f"CONE_{G.T_SHELL:g}MM_V10_piece_et_gabarit"
+NAME = f"CONE_{G.T_SHELL:g}MM_V11_piece_et_gabarit"
 KERF_LAYER = f"POCHE_KERF_{G.DEPTH:g}MM"
 SHEET_W, SHEET_H, MARGIN, GAP = G.SHEET_W, G.SHEET_H, G.SHEET_MARGIN, G.PART_GAP
 

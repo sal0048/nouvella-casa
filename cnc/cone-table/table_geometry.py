@@ -58,7 +58,9 @@ KERF_TRIM = 0.5          # pocket drawn this far inside the outline (nesting see
 R_BOT = 200.0            # cone outer radius at the floor (base 400 mm)
 R_TOP = 80.0             # cone outer radius at the top (top 160 mm = 40% of base, as the post)
 H_CONE = 450.0           # cone height
-Z_SPLIT = 225.0          # mid formers: joint between the two core levels
+Z_SPLIT = 225.0          # mid formers: joint between the two core levels (CORE_LEVELS = 2)
+CORE_LEVELS = 1          # V11: one full-height cross, as the proven conic-leg kits (V9/V10: 2)
+BASE_RING_W = 60.0       # V11: the floor former is a ring this wide (light, and it is the only bottom part)
 ONE_SHELL = True         # one kerfed sector for the whole cone (no seam, no collar)
 
 FIT = 0.5                # radial clearance formers / collar
@@ -231,11 +233,13 @@ def core_hw(z: float) -> float:
     return R_in(z) - CORE_FIT
 
 
-def tab_spans(r_former: float) -> list:
+def tab_spans(r_former: float, r_hole: float = 0.0) -> list:
     """Tab spans (x0, x1) for a plate edge entering a former of radius
     r_former: one tab each side of the half-lap slot, clear of the tab-root
     reliefs and leaving MORTISE_WEB of former outside the mortise."""
     lo = JOINT.slot_w / 2 + JOINT.relief_r + TAB_CLEAR
+    if r_hole:                               # ring former: mortises stay in the ring band
+        lo = max(lo, r_hole + MORTISE_WEB + JOINT.relief_r + JOINT.fit / 2)
     # the corner reliefs are circles on the mortise corners: their far
     # point is hypot(end, half width) + r from the former centre
     reach = r_former - MORTISE_WEB - JOINT.relief_r
@@ -267,12 +271,12 @@ def top_tabs(r_former: float, slot_from_top: bool) -> list:
         return [] if slot_from_top else centre_tab(r_former)
 
 
-def core_plate(za: float, zb: float, slot_from_top: bool) -> tuple:
+def core_plate(za: float, zb: float, slot_from_top: bool, r_hole_bot: float = 0.0) -> tuple:
     """One crossing plate between formers at za (top of the lower former)
     and zb (bottom of the upper former), drawn in its own plane: x across
     the cone, y = z. Returns (loop, bottom tab spans, top tab spans)."""
     hb, ht = core_hw(za), core_hw(zb)
-    bot = tab_spans(former_radius(za - T_BOARD, za))
+    bot = tab_spans(former_radius(za - T_BOARD, za), r_hole_bot)
     top = top_tabs(former_radius(zb, zb + T_BOARD), slot_from_top)
     zm = (za + zb) / 2
     sw = JOINT.slot_w / 2
@@ -303,43 +307,48 @@ def mortise(x0: float, x1: float, phi: float) -> Loop:
     return [(xc * c + x * c - y * s, xc * s + x * s + y * c, b) for x, y, b in loop]
 
 
-def build_parts() -> list:
-    zj0, zj1 = Z_SPLIT - T_BOARD, Z_SPLIT + T_BOARD
+def former_plan():
+    """{key: (label, z0, z1, ring hole radius or 0, note)} and, per core
+    level (1-based), the former below and above it."""
     zt0 = H_CONE - T_BOARD
-    rb = former_radius(0.0, T_BOARD)
-    rj_lo = former_radius(zj0, Z_SPLIT)
-    rj_up = former_radius(Z_SPLIT, zj1)
-    rt = former_radius(zt0, H_CONE)
-    rc = R(Z_SPLIT - T_BOARD / 2) + FIT       # collar bottom face rests here
+    if CORE_LEVELS == 1:
+        rb = former_radius(0.0, T_BOARD)
+        plan = {"FBASE": ("FORMER-BASE", 0.0, T_BOARD, rb - BASE_RING_W, "floor ring, the cross stands in it"),
+                "FTOP": ("FORMER-TOP", zt0, H_CONE, 0.0, "closes the cone top, the table top screws into it")}
+        return plan, [(T_BOARD, zt0, 0.0)], {1: "FBASE"}, {1: "FTOP"}
+    zj0, zj1 = Z_SPLIT - T_BOARD, Z_SPLIT + T_BOARD
+    plan = {"FBASE": ("FORMER-BASE", 0.0, T_BOARD, 0.0, "floor disc, core level 1 stands in it"),
+            "FJLO": ("FORMER-JOINT-LO", zj0, Z_SPLIT, 0.0, "caps core level 1"),
+            "FJUP": ("FORMER-JOINT-UP", Z_SPLIT, zj1, 0.0, "carries core level 2, glued on JOINT-LO"),
+            "FTOP": ("FORMER-TOP", zt0, H_CONE, 0.0, "closes the cone top, caps core level 2")}
+    return plan, [(T_BOARD, zj0, 0.0), (zj1, zt0, 45.0)], {1: "FBASE", 2: "FJUP"}, {1: "FJLO", 2: "FTOP"}
 
-    # core levels: (za, zb, plan angle of plate A)
-    levels = [(T_BOARD, zj0, 0.0), (zj1, zt0, 45.0)]
-    cores, holes = [], {"FBASE": [], "FJLO": [], "FJUP": [], "FTOP": []}
-    below = {0: "FBASE", 1: "FJUP"}
-    above = {0: "FJLO", 1: "FTOP"}
+
+def build_parts() -> list:
+    plan, levels, below, above = former_plan()
+    rc = R(Z_SPLIT - T_BOARD / 2) + FIT       # collar bottom face rests here (two-shell variant)
+    cores, holes = [], {k: [] for k in plan}
     for lv, (za, zb, phi) in enumerate(levels, 1):
+        hole = plan[below[lv]][3]
         for tag, from_top, ang in (("A", True, phi), ("B", False, phi + 90.0)):
-            loop, bot, top = core_plate(za, zb, from_top)
+            loop, bot, top = core_plate(za, zb, from_top, hole)
             key = f"CORE{lv}{tag}"
             cores.append(Part(key, f"CORE-{lv}{tag}", 1, [loop],
                               f"level {lv}, plane {ang:g} deg, half-lap from "
                               f"{'top' if from_top else 'bottom'}",
                               meta=dict(za=za, zb=zb, phi=ang, bot=bot, top=top,
-                                        from_top=from_top)))
-            holes[below[lv - 1]] += [mortise(x0, x1, ang) for x0, x1 in bot]
-            holes[above[lv - 1]] += [mortise(x0, x1, ang) for x0, x1 in top]
+                                        from_top=from_top, below=below[lv], above=above[lv])))
+            holes[below[lv]] += [mortise(x0, x1, ang) for x0, x1 in bot]
+            holes[above[lv]] += [mortise(x0, x1, ang) for x0, x1 in top]
 
-    def former(key, label, r, z0, z1, note):
-        h = holes[key]
-        return Part(key, label, 1, [circle(r)] + h, note, n_holes=len(h),
-                    meta=dict(z0=z0, z1=z1, r=r))
-
-    parts = [
-        former("FBASE", "FORMER-BASE", rb, 0.0, T_BOARD, "floor disc, core level 1 stands in it"),
-        former("FJLO", "FORMER-JOINT-LO", rj_lo, zj0, Z_SPLIT, "caps core level 1"),
-        former("FJUP", "FORMER-JOINT-UP", rj_up, Z_SPLIT, zj1, "carries core level 2, glued on JOINT-LO"),
-        former("FTOP", "FORMER-TOP", rt, zt0, H_CONE, "closes the cone top, caps core level 2"),
-    ] + cores
+    parts = []
+    for key, (label, z0, z1, rh, note) in plan.items():
+        r = former_radius(z0, z1)
+        bore = [[(-rh, 0.0, -1.0), (rh, 0.0, -1.0)]] if rh else []      # CW hole
+        h = bore + holes[key]
+        parts.append(Part(key, label, 1, [circle(r)] + h, note, n_holes=len(h),
+                          meta=dict(z0=z0, z1=z1, r=r, r_hole=rh)))
+    parts += cores
     if ONE_SHELL:
         shells = [shell("SHELL1", "SHELL", 0.0, H_CONE)]
     else:
