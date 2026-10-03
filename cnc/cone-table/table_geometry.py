@@ -50,7 +50,7 @@ SKIN = 2.0               # material left on the show face under each kerf (V9: 2
 TOOL_D = 6.0             # kerf width = cutter diameter
 KERF_LAND = 4.0          # least wood between two kerfs, at the narrow (top) edge
 KERF_PITCH_MIN = TOOL_D + KERF_LAND      # 10 mm: least pitch, at the narrow edge
-KERF_OVERRUN = 3.0       # the cutter CENTRE runs this far past a curved edge
+KERF_OVERRUN = 0.1       # the cutter CENTRE runs this far past a curved edge (V10: was 3)
 KERF_TRIM = 0.5          # pocket drawn this far inside the outline (nesting sees the outline);
                          # build.py adds KERF_TRIM + TOOL_D/2 + KERF_OVERRUN so the round
                          # end of the slot clears the edge: no full-thickness lip at kerf ends
@@ -160,8 +160,11 @@ def hinge_angle(s_in: float) -> float:
 
 def seam_relief(s_in: float) -> float:
     """Back-face strip taken off each seam edge so the two edges close like
-    a kerf: each side turns half a hinge about the show face."""
-    return T_SHELL * math.tan(hinge_angle(s_in) / 2) + 0.1
+    a kerf. Needed: half a hinge about the show face, T x tan(hinge/2)
+    (1.1 mm). Cut as the cutter centred on the edge line, so the pocket
+    leaves the part by half a cutter only, like every kerf end: 3 mm."""
+    need = T_SHELL * math.tan(hinge_angle(s_in) / 2)
+    return max(need + 0.1, TOOL_D / 2)
 
 
 def kerf_layout(s_in: float, s_out: float) -> list:

@@ -92,7 +92,7 @@ def main() -> int:
              f"(strain ~{T.SKIN / 2 / worst_hinge * 100:.1f}%) - confirm with the bend-test coupon")
     check(T.SKIN >= 2.0 and T.DEPTH > 0, f"pocket depth {T.DEPTH:g} mm leaves a "
                                          f"{T.SKIN:g} mm skin on {T.T_SHELL:g} mm board")
-    check(T.KERF_OVERRUN >= T.TOOL_D / 2, "kerfs run out through both curved edges")
+    check(0 < T.KERF_OVERRUN <= 0.5, "kerf pockets end with the cutter centre just past the edge: they leave the part by half a cutter only")
 
     section("[4] formers and collar sit where they should")
     for k in ("FBASE", "FJLO", "FJUP", "FTOP"):

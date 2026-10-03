@@ -75,12 +75,12 @@ MODELS = {
         ],
     },
     "cone": {
-        "dir": "cone-table", "name": "Cone", "ar": "طابلة Cone", "kind": "طابلة مخروط مطوي (kerf)",
+        "dir": "cone-table", "name": "Cone V10", "ar": "طابلة Cone", "kind": "طابلة مخروط 17 ملم · 49 تحفيرة كاملة",
         "loader": "cone", "ghost": 2,
         "stages": [
-            ("CORE", "CORE", "القلب", "4 لوحات يتعشقو في بعضاهم على شكل صليب.", r"CORE-"),
-            ("FORMERS", "FORMERS", "الحلقات", "حلقات تحدد شكل المخروط وتشد القلب.", r"FORMER-"),
-            ("SHELL", "KERF SHELL", "الغلاف المطوي", "لوحة 5 ملم محفورة (kerf) تنطوى على الحلقات.", r"SHELL"),
+            ("CORE", "CORE", "القلب", "4 لوحات 17 ملم يتعشقو في بعضاهم على شكل صليب، طابقين.", r"CORE-"),
+            ("FORMERS", "FORMERS", "الحلقات", "4 حلقات تحدد شكل المخروط وتشد القلب، 0.5 ملم تحت الغلاف للكولّة.", r"FORMER-"),
+            ("SHELL", "KERF SHELL", "الغلاف المطوي", "لوحة 17 ملم بـ 49 تحفيرة كاملة من التحت للفوق، 2 ملم تحت الوجه. «أشعة» تبيّن التحفيرات من الداخل.", r"SHELL"),
         ],
     },
     "crescent": {
@@ -103,10 +103,10 @@ def load_solids(key, cfg):
     d = CNC / cfg["dir"]
     sys.path.insert(0, str(d))
     sys.path.append(str(CNC / "curved-sofa"))
-    if cfg.get("loader") == "cone":
-        import cone5  # noqa: F401  (sets the V2 5 mm kerf geometry)
+    if cfg.get("loader") == "cone":            # V10, 17 mm: the kerfed shell replaces the plain wall
+        import shell3d
         import verify_3d as V
-        return V.assembly()
+        return [shell3d.kerfed_shell()] + [s for s in V.assembly() if not s.label.startswith("SHELL")]
     import export_step as E
     return E.assembly()
 

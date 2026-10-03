@@ -5,11 +5,11 @@
 [2] shell: the flat sector closes the cone exactly
   ok   outer and inner arcs share one apex (= where the seam edges meet): +0.000 mm
   ok   outer arc radius 776.209 vs design 776.209: -0.000 mm
-  ok   inner arc radius 310.483 vs design 310.483: +0.000 mm
+  ok   inner arc radius 310.483 vs design 310.483: -0.000 mm
   ok   sector angle 92.7586 deg vs 92.7586: +0.000 deg
   ok   floor edge 1256.637 mm = cone circumference 2 pi x 200: -0.000 mm
-  ok   top edge 502.655 mm = cone circumference 2 pi x 80: +0.000 mm
-  ok   slant 465.725 mm = hypot(450, 120): -0.000 mm
+  ok   top edge 502.655 mm = cone circumference 2 pi x 80: -0.000 mm
+  ok   slant 465.725 mm = hypot(450, 120): +0.000 mm
 
 [3] kerfs: 49 full length, radial, equal, 6 mm, through both edges
   49 kerf pockets + 2 seam reliefs on the shell
@@ -20,8 +20,8 @@
   ok   every kerf ends past the floor edge (run-out): +0.000 mm
   wood between kerfs: 4.053 mm at the top, 19.133 mm at the floor
   ok   back face: kerfs + seam close exactly what the cone needs: +0.000 mm
-  ok   seam relief 1: 1.133 mm on the part vs 1.133: +0.000 mm
-  ok   seam relief 2: 1.133 mm on the part vs 1.133: -0.000 mm
+  ok   seam relief 1: 3.000 mm on the part vs 3.000: -0.000 mm
+  ok   seam relief 2: 3.000 mm on the part vs 3.000: -0.000 mm
 
 [4] formers and core: tabs in mortises
   ok   all 12 circles (formers + jig rings) vs design diameters: +0.000 mm
