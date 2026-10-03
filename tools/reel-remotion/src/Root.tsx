@@ -4,11 +4,14 @@ import {Reel} from './Reel';
 import {FrReel, FR_DURATION} from './FrReel';
 import {NoyaSlide} from './NoyaSlide';
 import {NoyaReach} from './NoyaReach';
+import {NoyaEdu, NoyaChoice} from './NoyaEdu';
 export const Root: React.FC = () => (
   <>
     <Composition id="TableReel" component={Reel} durationInFrames={450} fps={30} width={1080} height={1920} />
     <Composition id="FrReel" component={FrReel} durationInFrames={FR_DURATION} fps={30} width={1080} height={1920} />
     <Composition id="NoyaSlide" component={NoyaSlide} durationInFrames={1} fps={30} width={1080} height={1350} defaultProps={{model: 'ORION', idx: 0}} />
     <Composition id="NoyaReach" component={NoyaReach} durationInFrames={1} fps={30} width={1080} height={1350} defaultProps={{model: 'HANA', idx: 0}} />
+    <Composition id="NoyaEdu" component={NoyaEdu} durationInFrames={1} fps={30} width={1080} height={1350} defaultProps={{model: 'E_ERREURS', idx: 0}} />
+    <Composition id="NoyaChoice" component={NoyaChoice} durationInFrames={1} fps={30} width={1080} height={1350} defaultProps={{model: 'C_HANA', idx: 0}} />
   </>
 );
