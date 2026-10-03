@@ -1,0 +1,41 @@
+[1] the ArtCAM file is the master drawing, unchanged (loop by loop)
+  97 loops in the ArtCAM file, 97 in the master
+  ok   worst loop difference (mean edge offset): +0.000 mm
+
+[2] shell: the flat sector closes the cone exactly
+  ok   outer and inner arcs share one apex (= where the seam edges meet): +0.000 mm
+  ok   outer arc radius 776.209 vs design 776.209: -0.000 mm
+  ok   inner arc radius 310.483 vs design 310.483: +0.000 mm
+  ok   sector angle 92.7586 deg vs 92.7586: +0.000 deg
+  ok   floor edge 1256.637 mm = cone circumference 2 pi x 200: -0.000 mm
+  ok   top edge 502.655 mm = cone circumference 2 pi x 80: +0.000 mm
+  ok   slant 465.725 mm = hypot(450, 120): -0.000 mm
+
+[3] kerfs: 49 full length, radial, equal, 6 mm, through both edges
+  49 kerf pockets + 2 seam reliefs on the shell
+  ok   worst kerf width vs 6.000: +0.000 mm
+  ok   worst kerf axis off the apex: +0.000 mm
+  ok   worst kerf position vs equal spacing (1.8552 deg), at the top edge: +0.000 mm
+  ok   every kerf starts past the top edge (run-out): +0.000 mm
+  ok   every kerf ends past the floor edge (run-out): +0.000 mm
+  wood between kerfs: 4.053 mm at the top, 19.133 mm at the floor
+  ok   back face: kerfs + seam close exactly what the cone needs: +0.000 mm
+  ok   seam relief 1: 1.133 mm on the part vs 1.133: +0.000 mm
+  ok   seam relief 2: 1.133 mm on the part vs 1.133: -0.000 mm
+
+[4] formers and core: tabs in mortises
+  ok   all 12 circles (formers + jig rings) vs design diameters: +0.000 mm
+  ok   16 mortises: width 18.000-18.000 vs board 17 + 1 mm slot clearance: +0.000 mm
+  ok   16 mortise lengths vs their core tabs + 1 mm: +0.000 mm
+
+[5] the shell meets the formers and the jig rings
+  ok   FORMER-BASE: shell inner face 177.873 - former 177.373 = 0.500 glue line: +0.000 mm
+  ok   FORMER-JOINT-LO: shell inner face 122.406 - former 121.906 = 0.500 glue line: +0.000 mm
+  ok   FORMER-JOINT-UP: shell inner face 117.873 - former 117.373 = 0.500 glue line: +0.000 mm
+  ok   FORMER-TOP: shell inner face 62.406 - former 61.906 = 0.500 glue line: +0.000 mm
+  ok   JIG-BASE: bore 401.000 = cone outer 400.000 at z 0 + 2 x 0.5: +0.000 mm
+  ok   JIG-1: bore 340.000 = cone outer 340.000 at z 112.5: +0.000 mm
+  ok   JIG-2: bore 280.000 = cone outer 280.000 at z 225: +0.000 mm
+  ok   JIG-3: bore 220.000 = cone outer 220.000 at z 337.5: +0.000 mm
+
+FAILURES: 0
