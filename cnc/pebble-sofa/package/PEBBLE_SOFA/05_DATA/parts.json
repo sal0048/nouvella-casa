@@ -1,0 +1,648 @@
+[
+  {
+    "part_id": "P01",
+    "name": "BASE-RING-L",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 1126.4,
+      "y": 915.2
+    },
+    "area_mm2": 363965.8,
+    "cutouts": 25,
+    "corners_relieved": 0,
+    "assembly_group": "BASE",
+    "role": "floor ring",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P02",
+    "name": "SEAT-RING-L",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 1246.0,
+      "y": 1018.0
+    },
+    "area_mm2": 574669.7,
+    "cutouts": 25,
+    "corners_relieved": 0,
+    "assembly_group": "SEAT",
+    "role": "seat ring, webbing across",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P03",
+    "name": "RIB-LA",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 147.3,
+      "y": 330.0
+    },
+    "area_mm2": 39708.0,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "assembly_group": "BODY",
+    "role": "body rib at 7.29, 172.71, 187.29, 352.71 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P04",
+    "name": "RIB-LB",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 149.6,
+      "y": 330.0
+    },
+    "area_mm2": 40237.0,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "assembly_group": "BODY",
+    "role": "body rib at 21.4875, 158.512, 201.488, 338.512 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P05",
+    "name": "RIB-LC",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 149.38,
+      "y": 330.0
+    },
+    "area_mm2": 40186.8,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "assembly_group": "BODY",
+    "role": "body rib at 35.505, 144.495, 215.505, 324.495 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P06",
+    "name": "RIB-LD",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 144.49,
+      "y": 330.0
+    },
+    "area_mm2": 39063.2,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "assembly_group": "BODY",
+    "role": "body rib at 49.545, 130.455, 229.545, 310.455 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P07",
+    "name": "RIB-LE",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 137.86,
+      "y": 330.0
+    },
+    "area_mm2": 37536.7,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "assembly_group": "BODY",
+    "role": "body rib at 64.395, 115.605, 244.395, 295.605 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P08",
+    "name": "RIB-LF",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 133.1,
+      "y": 330.0
+    },
+    "area_mm2": 36440.5,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "assembly_group": "BODY",
+    "role": "body rib at 81.09, 98.91, 261.09, 278.91 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P09",
+    "name": "BASE-RING-R",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 1478.4,
+      "y": 932.8
+    },
+    "area_mm2": 423338.8,
+    "cutouts": 29,
+    "corners_relieved": 0,
+    "assembly_group": "BASE",
+    "role": "floor ring",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P10",
+    "name": "SEAT-RING-R",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 1626.0,
+      "y": 1037.0
+    },
+    "area_mm2": 670371.3,
+    "cutouts": 29,
+    "corners_relieved": 0,
+    "assembly_group": "SEAT",
+    "role": "seat ring, webbing across",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P11",
+    "name": "RIB-RA",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 171.13,
+      "y": 330.0
+    },
+    "area_mm2": 45190.8,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "assembly_group": "BODY",
+    "role": "body rib at 5.67, 174.33, 185.67, 354.33 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P12",
+    "name": "RIB-RB",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 171.66,
+      "y": 330.0
+    },
+    "area_mm2": 45312.9,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "assembly_group": "BODY",
+    "role": "body rib at 16.92, 163.08, 196.92, 343.08 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P13",
+    "name": "RIB-RC",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 167.58,
+      "y": 330.0
+    },
+    "area_mm2": 44375.0,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "assembly_group": "BODY",
+    "role": "body rib at 28.035, 151.965, 208.035, 331.965 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P14",
+    "name": "RIB-RD",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 158.78,
+      "y": 330.0
+    },
+    "area_mm2": 42348.8,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "assembly_group": "BODY",
+    "role": "body rib at 39.015, 140.985, 219.015, 320.985 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P15",
+    "name": "RIB-RE",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 148.63,
+      "y": 330.0
+    },
+    "area_mm2": 40015.5,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "assembly_group": "BODY",
+    "role": "body rib at 50.7825, 129.218, 230.782, 309.217 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P16",
+    "name": "RIB-RF",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 139.75,
+      "y": 330.0
+    },
+    "area_mm2": 37971.6,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "assembly_group": "BODY",
+    "role": "body rib at 64.62, 115.38, 244.62, 295.38 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P17",
+    "name": "RIB-RG",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 134.33,
+      "y": 330.0
+    },
+    "area_mm2": 36725.1,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "assembly_group": "BODY",
+    "role": "body rib at 81.09, 98.91, 261.09, 278.91 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P18",
+    "name": "PEBBLE-BL-PLATE",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 920.0,
+      "y": 360.0
+    },
+    "area_mm2": 262618.7,
+    "cutouts": 16,
+    "corners_relieved": 0,
+    "assembly_group": "PLATE",
+    "role": "screwed + glued on the seat ring",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P19",
+    "name": "PEBBLE-BL-RIB1",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 344.0,
+      "y": 317.94
+    },
+    "area_mm2": 88088.6,
+    "cutouts": 0,
+    "corners_relieved": 6,
+    "assembly_group": "PRIB",
+    "role": "dome section at +0 mm",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P20",
+    "name": "PEBBLE-BL-RIB2",
+    "quantity": 2,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 330.74,
+      "y": 310.75
+    },
+    "area_mm2": 82687.4,
+    "cutouts": 0,
+    "corners_relieved": 6,
+    "assembly_group": "PRIB",
+    "role": "dome section at -166, +166 mm",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P21",
+    "name": "PEBBLE-BL-RIB3",
+    "quantity": 2,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 263.65,
+      "y": 267.95
+    },
+    "area_mm2": 56453.8,
+    "cutouts": 0,
+    "corners_relieved": 6,
+    "assembly_group": "PRIB",
+    "role": "dome section at -331, +331 mm",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P22",
+    "name": "PEBBLE-BL-SPINE",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 828.0,
+      "y": 318.0
+    },
+    "area_mm2": 217927.4,
+    "cutouts": 0,
+    "corners_relieved": 22,
+    "assembly_group": "SPINE",
+    "role": "drops over the ribs",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P23",
+    "name": "PEBBLE-EL-PLATE",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 300.0,
+      "y": 320.0
+    },
+    "area_mm2": 75804.2,
+    "cutouts": 5,
+    "corners_relieved": 0,
+    "assembly_group": "PLATE",
+    "role": "screwed + glued on the seat ring",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P24",
+    "name": "PEBBLE-EL-RIB1",
+    "quantity": 2,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 217.04,
+      "y": 227.53
+    },
+    "area_mm2": 39228.3,
+    "cutouts": 0,
+    "corners_relieved": 6,
+    "assembly_group": "PRIB",
+    "role": "dome section at -115, +115 mm",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P25",
+    "name": "PEBBLE-EL-SPINE",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 288.0,
+      "y": 268.0
+    },
+    "area_mm2": 62664.7,
+    "cutouts": 0,
+    "corners_relieved": 6,
+    "assembly_group": "SPINE",
+    "role": "drops over the ribs",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P26",
+    "name": "PEBBLE-BR-PLATE",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 1060.0,
+      "y": 410.0
+    },
+    "area_mm2": 346354.2,
+    "cutouts": 19,
+    "corners_relieved": 0,
+    "assembly_group": "PLATE",
+    "role": "screwed + glued on the seat ring",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P27",
+    "name": "PEBBLE-BR-RIB1",
+    "quantity": 2,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 392.36,
+      "y": 337.26
+    },
+    "area_mm2": 106933.2,
+    "cutouts": 0,
+    "corners_relieved": 6,
+    "assembly_group": "PRIB",
+    "role": "dome section at -76, +76 mm",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P28",
+    "name": "PEBBLE-BR-RIB2",
+    "quantity": 2,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 370.26,
+      "y": 325.36
+    },
+    "area_mm2": 97186.2,
+    "cutouts": 0,
+    "corners_relieved": 6,
+    "assembly_group": "PRIB",
+    "role": "dome section at -229, +229 mm",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P29",
+    "name": "PEBBLE-BR-RIB3",
+    "quantity": 2,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 302.49,
+      "y": 284.14
+    },
+    "area_mm2": 68922.7,
+    "cutouts": 0,
+    "corners_relieved": 6,
+    "assembly_group": "PRIB",
+    "role": "dome section at -382, +382 mm",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P30",
+    "name": "PEBBLE-BR-SPINE",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 954.0,
+      "y": 338.0
+    },
+    "area_mm2": 266549.8,
+    "cutouts": 0,
+    "corners_relieved": 26,
+    "assembly_group": "SPINE",
+    "role": "drops over the ribs",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P31",
+    "name": "PEBBLE-AR-PLATE",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 487.27,
+      "y": 618.4
+    },
+    "area_mm2": 196957.5,
+    "cutouts": 8,
+    "corners_relieved": 0,
+    "assembly_group": "PLATE",
+    "role": "screwed + glued on the seat ring",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P32",
+    "name": "PEBBLE-AR-RIB1",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 354.0,
+      "y": 287.95
+    },
+    "area_mm2": 81969.2,
+    "cutouts": 0,
+    "corners_relieved": 6,
+    "assembly_group": "PRIB",
+    "role": "dome section at +0 mm",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P33",
+    "name": "PEBBLE-AR-RIB2",
+    "quantity": 2,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 271.42,
+      "y": 243.73
+    },
+    "area_mm2": 52797.7,
+    "cutouts": 0,
+    "corners_relieved": 6,
+    "assembly_group": "PRIB",
+    "role": "dome section at -238, +238 mm",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P34",
+    "name": "PEBBLE-AR-SPINE",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 594.0,
+      "y": 288.0
+    },
+    "area_mm2": 141334.4,
+    "cutouts": 0,
+    "corners_relieved": 10,
+    "assembly_group": "SPINE",
+    "role": "drops over the ribs",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  }
+]

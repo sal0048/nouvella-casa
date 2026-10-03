@@ -1,0 +1,274 @@
+{
+  "product": "LENA_SOFA",
+  "status": "CAD_COMPLETE_NOT_VALIDATED",
+  "status_reason": "all automated checks pass, but CNC_BIT_DIAMETER and MATERIAL_THICKNESS are unconfirmed and change the cut geometry",
+  "physical_test": "NOT_PERFORMED",
+  "fit": "UNTESTED_FIT",
+  "checks_passed": 49,
+  "checks_failed": 0,
+  "checks": [
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "01 RIB-A: 8 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "02 RIB-B: 8 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "03 BACK-ARCH: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "04 RAIL-FRONT: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "05 RAIL-MID: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "06 RAIL-BACK: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "07 ARM-INNER-L: 17 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "08 ARM-INNER-R: 17 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "09 ARM-SPACER: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "10 ARM-OUTER: 10 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "11 SEAT-DECK: 7 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[2] joints (Tokyo rule: 19 x 41 mortise for 18 mm board, 40 mm tab)",
+      "passed": true,
+      "message": "mortise 41 x 19 mm, tab 40 mm, board 18 mm"
+    },
+    {
+      "section": "[2] joints (Tokyo rule: 19 x 41 mortise for 18 mm board, 40 mm tab)",
+      "passed": true,
+      "message": "54 mortises, all 19 x 41 mm: {(19.0, 41.0): 54}"
+    },
+    {
+      "section": "[2] joints (Tokyo rule: 19 x 41 mortise for 18 mm board, 40 mm tab)",
+      "passed": true,
+      "message": "relief R3.2 clears a 6 mm cutter"
+    },
+    {
+      "section": "[2] joints (Tokyo rule: 19 x 41 mortise for 18 mm board, 40 mm tab)",
+      "passed": true,
+      "message": "thinnest web beside a post mortise 19.0 mm (>= 18 mm)"
+    },
+    {
+      "section": "[2] joints (Tokyo rule: 19 x 41 mortise for 18 mm board, 40 mm tab)",
+      "passed": true,
+      "message": "rail cross-halvings keep 81 mm of rail and rib each side"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "01 RIB-A: 13 corners relieved, worst spot a 6 mm bit cannot reach 0.01 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "02 RIB-B: 9 corners relieved, worst spot a 6 mm bit cannot reach 0.01 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "03 BACK-ARCH: 8 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "04 RAIL-FRONT: 14 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "05 RAIL-MID: 10 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "06 RAIL-BACK: 14 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "07 ARM-INNER-L: 3 corners relieved, worst spot a 6 mm bit cannot reach 0.01 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "08 ARM-INNER-R: 3 corners relieved, worst spot a 6 mm bit cannot reach 0.01 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "09 ARM-SPACER: 10 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "10 ARM-OUTER: 3 corners relieved, worst spot a 6 mm bit cannot reach 0.01 mm2"
+    },
+    {
+      "section": "[3] corner relief and cutter reach",
+      "passed": true,
+      "message": "11 SEAT-DECK: 0 corners relieved, worst spot a 6 mm bit cannot reach 0.01 mm2"
+    },
+    {
+      "section": "[4] nesting",
+      "passed": true,
+      "message": "sheet 1: 7 parts, closest 12.0 mm apart, all inside the 9 mm edge"
+    },
+    {
+      "section": "[4] nesting",
+      "passed": true,
+      "message": "sheet 2: 8 parts, closest 14.0 mm apart, all inside the 9 mm edge"
+    },
+    {
+      "section": "[4] nesting",
+      "passed": true,
+      "message": "sheet 3: 5 parts, closest 14.9 mm apart, all inside the 9 mm edge"
+    },
+    {
+      "section": "[4] nesting",
+      "passed": true,
+      "message": "sheet 4: 2 parts, closest 15.7 mm apart, all inside the 9 mm edge"
+    },
+    {
+      "section": "[4] nesting",
+      "passed": true,
+      "message": "every part placed its full quantity (22 pieces)"
+    },
+    {
+      "section": "[5] labels",
+      "passed": true,
+      "message": "22 pieces labelled"
+    },
+    {
+      "section": "[5] labels",
+      "passed": true,
+      "message": "every label sits on material, 4 mm from any cut"
+    },
+    {
+      "section": "[6] built DXF",
+      "passed": true,
+      "message": "units = mm"
+    },
+    {
+      "section": "[6] built DXF",
+      "passed": true,
+      "message": "105 closed CUT profiles (expected 105)"
+    },
+    {
+      "section": "[6] built DXF",
+      "passed": true,
+      "message": "22 ENGRAVE-LABEL texts"
+    },
+    {
+      "section": "[6] built DXF",
+      "passed": true,
+      "message": "no duplicate CUT profiles (0 found)"
+    },
+    {
+      "section": "[6] built DXF",
+      "passed": true,
+      "message": "scale 1:1 (front rail 1796.0 mm in model and in the DXF)"
+    },
+    {
+      "section": "[6] built DXF",
+      "passed": true,
+      "message": "longest part 1796 mm fits the sheet"
+    },
+    {
+      "section": "[3D-1] interference",
+      "passed": true,
+      "message": "42 neighbouring pairs, 0 interpenetrate"
+    },
+    {
+      "section": "[3D-2] every mortise holds a tab",
+      "passed": true,
+      "message": "54/54 mortises filled"
+    },
+    {
+      "section": "[3D-3] load path",
+      "passed": true,
+      "message": "on the floor: ARM-INNER-L, ARM-INNER-R, ARM-OUTER, RIB-A, RIB-B"
+    },
+    {
+      "section": "[3D-3] load path",
+      "passed": true,
+      "message": "6/6 spacers bear on both panels of their arm"
+    },
+    {
+      "section": "[3D-3] load path",
+      "passed": true,
+      "message": "3/3 rails sit in all 3 ribs and both arm panels"
+    },
+    {
+      "section": "[3D-3] load path",
+      "passed": true,
+      "message": "2/2 decks bear on 2 ribs and all 3 rails"
+    },
+    {
+      "section": "[3D-3] load path",
+      "passed": true,
+      "message": "4/4 arches tabbed into the posts either side"
+    },
+    {
+      "section": "[3D-4] assembly sequence: every piece slides home along one axis",
+      "passed": true,
+      "message": "22 pieces in order, 0 blocked on the way in"
+    },
+    {
+      "section": "[3D-5] overall size",
+      "passed": true,
+      "message": "frame 2200.0 x 860.0 x 800.0 mm, standing on z = 0"
+    }
+  ],
+  "open_inputs": [
+    {
+      "parameter": "CNC_BIT_DIAMETER",
+      "question": "What cutter diameter will cut this job? (dogbones assume 6 mm)"
+    },
+    {
+      "parameter": "MATERIAL_THICKNESS",
+      "question": "Caliper the real sheet in 3 places (nominal 18 mm)."
+    },
+    {
+      "parameter": "SHEET_SIZE",
+      "question": "Confirm the sheet size from your supplier (2440 x 1220 assumed)."
+    },
+    {
+      "parameter": "OVERALL_DIMENSIONS",
+      "question": "Confirm or change the frame 2200 x 860 x 800 mm, seat frame 330, arms 570 (finished about 226 x 90 x 85 cm, seat ~45 cm)."
+    }
+  ]
+}

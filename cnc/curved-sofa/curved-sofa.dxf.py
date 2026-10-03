@@ -6,7 +6,7 @@ is nested onto 2440 x 1220 sheets and emitted as closed cut profiles.
 Layers
 ------
 CUT               closed cut profiles (outer contours, slots, lightening holes)
-ENGRAVE-LABEL     part identification text
+ENGRAVE-LABEL     part number + name + instance, placed on the part's material
 REFERENCE-SHEET   sheet outlines and sheet titles (not cut)
 """
 
@@ -18,7 +18,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import ezdxf
+from ezdxf.enums import TextEntityAlignment
 
+import labels as B
 import sofa_geometry as G
 import sofa_layout as L
 
@@ -41,7 +43,7 @@ def gen_dxf():
     doc.layers.add(LAYER_LABEL, color=3)
     doc.layers.add(LAYER_REF, color=8)
 
-    for index, placements in enumerate(sheets):
+    for index, labelled in enumerate(B.all_labels(parts, sheets)):
         oy = -index * SHEET_PITCH_Y
 
         msp.add_lwpolyline(
@@ -53,26 +55,20 @@ def gen_dxf():
             height=40.0, dxfattribs={"layer": LAYER_REF},
         ).set_placement((0.0, oy + G.SHEET_H + 55.0))
 
-        for p in placements:
+        for p, lab in labelled:
             for loop in p.loops:
                 msp.add_lwpolyline(
                     [(x, y + oy, b) for x, y, b in loop],
                     format="xyb", close=True, dxfattribs={"layer": LAYER_CUT},
                 )
-            label = p.label if p.instance == 1 and _qty(parts, p.key) == 1 \
-                else f"{p.label} {p.instance}/{_qty(parts, p.key)}"
+            if lab is None:
+                raise ValueError(f"no room to engrave a label on {p.label} {p.instance}")
             msp.add_text(
-                label, height=22.0, dxfattribs={"layer": LAYER_LABEL},
-            ).set_placement((p.x + 14.0, p.y + oy + 14.0))
+                lab.text, height=lab.height,
+                dxfattribs={"layer": LAYER_LABEL, "rotation": lab.angle},
+            ).set_placement((lab.x, lab.y + oy), align=TextEntityAlignment.MIDDLE_CENTER)
 
     return {"document": doc}
-
-
-def _qty(parts, key: str) -> int:
-    for part in parts:
-        if part.key == key:
-            return part.qty
-    return 1
 
 
 if __name__ == "__main__":

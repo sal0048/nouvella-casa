@@ -1,0 +1,502 @@
+<title>Pebble X-Ray</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: full-bleed 3D stage; floating glass bars (top: modes, side: stage card, bottom: build timeline). */
+:root {
+  --bg: #e4e7e8;            /* cool concrete, the workshop floor */
+  --fg: #1b2226;
+  --muted: #5b666c;
+  --panel: rgba(250, 251, 251, .78);
+  --line: rgba(27, 34, 38, .14);
+  --accent: #c4562a;        /* terracotta = a piece in motion, same as the cut video */
+  --birch: #c9a46f;
+  --ok: #2c8a57;
+  --font-ui: "Cairo", "Segoe UI", Tahoma, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --r: 12px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11161a; --fg: #e7ecee; --muted: #93a0a7; --panel: rgba(20, 26, 31, .80);
+  --line: rgba(231, 236, 238, .14); --accent: #e0703f; --birch: #d9b57f; --ok: #4cbb7c; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11161a; --fg: #e7ecee; --muted: #93a0a7; --panel: rgba(20, 26, 31, .80);
+  --line: rgba(231, 236, 238, .14); --accent: #e0703f; --birch: #d9b57f; --ok: #4cbb7c; color-scheme: dark }
+
+html, body { height: 100%; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-ui); overflow: hidden; direction: rtl; }
+#stage { position: fixed; inset: 0; }
+#stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.glass { background: var(--panel); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--line); border-radius: var(--r); }
+
+header { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 12px); inset-inline: 16px;
+  display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; pointer-events: none; }
+header > * { pointer-events: auto; }
+.brand { padding: 10px 16px; min-width: 0; }
+.brand .eyebrow { font: 600 11px/1 var(--font-data); letter-spacing: .18em; color: var(--muted); direction: ltr; text-align: right; }
+.brand h1 { margin: 4px 0 0; font-size: 22px; font-weight: 800; line-height: 1.2; text-wrap: balance; }
+.brand .backend { font: 400 11px/1.4 var(--font-data); color: var(--muted); direction: ltr; text-align: right; }
+
+.modes { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; max-width: 560px; justify-content: flex-start; }
+.chip { font: 700 13px/1 var(--font-ui); color: var(--fg); background: transparent; border: 1px solid var(--line);
+  border-radius: 999px; padding: 8px 12px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.chip:hover { border-color: var(--fg); }
+.chip:focus-visible, .tl button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.chip .k { font: 400 10px/1 var(--font-data); opacity: .6; direction: ltr; }
+
+aside { position: fixed; top: 132px; inset-inline-start: 16px; width: min(330px, calc(100vw - 32px));
+  padding: 16px; display: grid; gap: 10px; }
+aside .step { font: 600 11px/1 var(--font-data); letter-spacing: .14em; color: var(--accent); direction: ltr; text-align: right; }
+aside h2 { margin: 0; font-size: 26px; font-weight: 800; line-height: 1.2; }
+aside p { margin: 0; color: var(--muted); line-height: 1.7; font-size: 14px; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; border-top: 1px solid var(--line); padding-top: 10px; }
+.stats div { display: grid; gap: 2px; min-width: 0; }
+.stats b { font: 600 18px/1.1 var(--font-data); font-variant-numeric: tabular-nums; }
+.stats span { font-size: 11px; color: var(--muted); }
+.checks { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--ok); font-weight: 700; }
+.checks i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); display: inline-block; }
+#pick { border-top: 1px solid var(--line); padding-top: 10px; display: grid; gap: 4px; }
+#pick .id { font: 600 14px/1.3 var(--font-data); direction: ltr; text-align: right; }
+#pick .note { font: 400 12px/1.5 var(--font-data); color: var(--muted); direction: ltr; text-align: right; }
+
+.tl { position: fixed; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); inset-inline: 16px;
+  padding: 10px 14px 12px; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: center; }
+.tl button { width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--accent); color: #fff;
+  font-size: 15px; cursor: pointer; grid-row: span 2; }
+.tl input[type=range] { width: 100%; accent-color: var(--accent); direction: ltr; margin: 0; }
+.marks { display: grid; grid-template-columns: repeat(7, 1fr); direction: ltr; font: 600 10px/1.2 var(--font-data);
+  letter-spacing: .06em; color: var(--muted); }
+.marks span { text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.marks span.on { color: var(--fg); }
+.marks span b { color: var(--accent); font-weight: 600; }
+
+.ann, .dim { left: 0; top: 0; }
+.ann { direction: rtl; font: 700 12px/1.3 var(--font-ui); color: var(--fg); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; padding: 5px 9px; white-space: nowrap; pointer-events: none; transform: translateY(-14px); }
+.ann small { display: block; font: 400 10px/1.3 var(--font-data); color: var(--muted); direction: ltr; text-align: right; }
+.ann::after { content: ""; position: absolute; left: 50%; bottom: -14px; width: 1px; height: 14px; background: var(--fg); opacity: .5; }
+.dim { font: 600 12px/1 var(--font-data); color: var(--accent); background: var(--panel); padding: 3px 6px; border-radius: 6px; pointer-events: none; }
+#sectionCtl { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); }
+#sectionCtl input { flex: 1; accent-color: var(--accent); direction: ltr; }
+#err { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; }
+
+@media (max-width: 720px) {
+  header { flex-direction: column; align-items: stretch; }
+  .modes { max-width: none; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .chip { flex: none; }
+  aside { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 96px); inset-inline: 16px; width: auto; padding: 12px; gap: 6px; }
+  aside h2 { font-size: 20px; }
+  aside p { font-size: 13px; line-height: 1.55; }
+  aside .stats { display: none; }
+  .marks { font-size: 9px; letter-spacing: 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<div id="stage" aria-label="نموذج 3D تفاعلي لهيكل كنبة Pebble"></div>
+
+<header>
+  <div class="brand glass">
+    <div class="eyebrow">NOUVELLA CASA · FRAME X-RAY</div>
+    <h1>كنبة Pebble</h1>
+    <div class="backend" id="backend">…</div>
+  </div>
+  <nav class="modes glass" aria-label="أوضاع العرض">
+    <button class="chip" id="mHero" type="button">الواجهة <span class="k">Hero</span></button>
+    <button class="chip" id="mExplode" type="button" aria-pressed="false">تفكيك <span class="k">Explode</span></button>
+    <button class="chip" id="mSection" type="button" aria-pressed="false">مقطع <span class="k">Section</span></button>
+    <button class="chip" id="mXray" type="button" aria-pressed="false">أشعة <span class="k">X-ray</span></button>
+    <button class="chip" id="mLabels" type="button" aria-pressed="true">شروحات <span class="k">Labels</span></button>
+    <button class="chip" id="mDims" type="button" aria-pressed="false">القياسات <span class="k">mm</span></button>
+    <button class="chip" id="mDusk" type="button" aria-pressed="false">مساء <span class="k">Dusk</span></button>
+    <button class="chip" id="mTop" type="button">من الفوق <span class="k">Top</span></button>
+  </nav>
+</header>
+
+<aside class="glass" aria-live="polite">
+  <div class="step" id="stStep">STEP 01 / 07</div>
+  <h2 id="stTitle">القاعدة</h2>
+  <p id="stText"></p>
+  <div id="sectionCtl" hidden><label for="secPos">موضع المقطع</label><input id="secPos" type="range" min="0" max="1" step="0.001" value="0.5"></div>
+  <div class="stats">
+    <div><b>80</b><span>قطعة</span></div>
+    <div><b>4</b><span>بلاكات</span></div>
+    <div><b>152</b><span>تجويف</span></div>
+    <div><b id="stPlaced">0</b><span>مركّبة</span></div>
+  </div>
+  <div class="checks"><i></i>127 من 127 فحص ناجح قبل القص</div>
+  <div id="pick"><span style="color:var(--muted);font-size:12px">اضغط على أي قطعة باش تشوف اسمها</span></div>
+</aside>
+
+<div class="tl glass">
+  <button id="play" type="button" aria-label="شغّل التركيب">▶</button>
+  <input id="scrub" type="range" min="0" max="7" step="0.001" value="7" aria-label="مرحلة التركيب">
+  <div class="marks" id="marks"></div>
+</div>
+<div id="err" hidden></div>
+
+<script type="application/json" id="data">/*DATA*/</script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.webgpu.js",
+  "three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.webgpu.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from "three/webgpu";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
+
+const D = JSON.parse(document.getElementById("data").textContent);
+const $ = (id) => document.getElementById(id);
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+const STAGES = [
+  { g: "BASE",  en: "FOUNDATION", ar: "القاعدة", t: "حلقتين على الأرض، وحدة لكل جهة. فيهم التجاويف اللي تدخل فيهم أرجل الأضلاع." },
+  { g: "BODY",  en: "RIBS",       ar: "الأضلاع", t: "52 ضلع يدخلو في الحلقة من الفوق. الحافة الخارجية منفوخة، هي اللي تعطي الجنب المدوّر." },
+  { g: "SEAT",  en: "SEAT RING",  ar: "حلقة القعدة", t: "تنزل فوق الأضلاع على علو 330 ملم وتقفلهم. يتشد عليها الحزام المطاطي (webbing)." },
+  { g: "PLATE", en: "PLATES",     ar: "قواعد الوسائد", t: "4 صفائح بيضاوية تتلصق وتتبرغى على حلقة القعدة، كل وحدة قاعدة لوسادة." },
+  { g: "PRIB",  en: "DOME RIBS",  ar: "أضلاع الوسائد", t: "16 مقطع تاع القبة يدخلو في الصفيحة من الفوق، كل واحد على شكل الوسادة." },
+  { g: "SPINE", en: "SPINE",      ar: "العمود الفقري", t: "ينزل فوق الأضلاع بالطول (egg-crate) ويقفل الوسادة. هنا الهيكل يكمل: 80 قطعة." },
+  { g: "DONE",  en: "FINISHED",   ar: "الشكل النهائي", t: "الإسفنج والبوكليه فوق نفس الهيكل. استعمل «أشعة» باش تشوف الهيكل من تحت القماش." },
+];
+const GI = Object.fromEntries(D.groups.map((g, i) => [g, i]));
+const EXPLODE = { BASE: 0, BODY: 160, SEAT: 480, PLATE: 700, PRIB: 900, SPINE: 1150 };
+
+// ---------------------------------------------------------------- renderer
+const stage = $("stage");
+let renderer;
+try {
+  // WebGPU first; three falls back to WebGL2 itself when the browser has no WebGPU.
+  // "#webgl" forces the WebGL2 backend (used after a lost GPU device).
+  renderer = new THREE.WebGPURenderer({ antialias: true, forceWebGL: location.hash === "#webgl" });
+  await renderer.init();
+  renderer.onDeviceLost = () => { if (location.hash !== "#webgl") { location.hash = "webgl"; location.reload(); } };
+} catch (e) {
+  $("err").hidden = false;
+  $("err").textContent = "المتصفح هذا ما يقدرش يعرض 3D. جرّب Chrome ولا Safari جديد.";
+  throw e;
+}
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+stage.appendChild(renderer.domElement);
+$("backend").textContent = `Three.js r170 · ${renderer.backend.isWebGPUBackend ? "WebGPU" : "WebGL2 fallback"}`;
+
+const labels = new CSS2DRenderer();
+labels.setSize(innerWidth, innerHeight);
+Object.assign(labels.domElement.style, { position: "absolute", inset: "0", pointerEvents: "none", direction: "ltr" });
+stage.appendChild(labels.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.05, 80);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.maxPolarAngle = Math.PI * 0.49;
+controls.minDistance = 1.2;
+controls.maxDistance = 16;
+
+// z-up millimetres -> y-up metres
+const world = new THREE.Group();
+world.rotation.x = -Math.PI / 2;
+world.scale.setScalar(0.001);
+scene.add(world);
+
+// ---------------------------------------------------------------- lights
+const hemi = new THREE.HemisphereLight(0xffffff, 0x8a8f92, 1.1);
+const sun = new THREE.DirectionalLight(0xffffff, 2.4);
+sun.position.set(2.5, 4.2, 3.2);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -2.6, right: 2.6, top: 2.0, bottom: -2.0, near: 0.5, far: 12 });
+sun.shadow.bias = -0.0004;
+const fill = new THREE.DirectionalLight(0xdfe8ff, 0.6);
+fill.position.set(-3, 2, -2);
+scene.add(hemi, sun, fill);
+const floor = new THREE.Mesh(new THREE.CircleGeometry(9, 64), new THREE.MeshStandardMaterial({ roughness: 0.95 }));
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+// ---------------------------------------------------------------- materials
+function woodTexture() {
+  const c = document.createElement("canvas"); c.width = 512; c.height = 512;
+  const x = c.getContext("2d");
+  x.fillStyle = "#d5b384"; x.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 220; i++) {
+    const y = Math.random() * 512, a = 0.03 + Math.random() * 0.07;
+    x.strokeStyle = `rgba(120,80,40,${a})`; x.lineWidth = 0.6 + Math.random() * 2.2;
+    x.beginPath(); x.moveTo(0, y);
+    for (let s = 0; s <= 512; s += 32) x.lineTo(s, y + Math.sin(s / 60 + i) * 4);
+    x.stroke();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(0.004, 0.004); t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+const section = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);
+const clip = [];
+const wood = new THREE.MeshStandardMaterial({ map: woodTexture(), roughness: 0.62, side: THREE.DoubleSide, clippingPlanes: clip });
+const hot = new THREE.MeshStandardMaterial({ color: css("--accent") || "#c4562a", roughness: 0.55, side: THREE.DoubleSide, clippingPlanes: clip });
+const picked = new THREE.MeshStandardMaterial({ color: 0x2c8a57, roughness: 0.5, side: THREE.DoubleSide, clippingPlanes: clip });
+const fabric = {
+  beige: new THREE.MeshPhysicalMaterial({ side: THREE.DoubleSide, color: 0xe9e3d8, roughness: 1, sheen: 1, sheenColor: 0xffffff, sheenRoughness: 0.6, transparent: true, clippingPlanes: clip }),
+  grey: new THREE.MeshPhysicalMaterial({ side: THREE.DoubleSide, color: 0x9a9da1, roughness: 1, sheen: 1, sheenColor: 0xdddddd, sheenRoughness: 0.6, transparent: true, clippingPlanes: clip }),
+};
+
+// ---------------------------------------------------------------- pieces
+const T = D.T;
+const pieces = [];
+for (const p of D.pieces) {
+  const pts = (flat) => { const a = []; for (let i = 0; i < flat.length; i += 2) a.push(new THREE.Vector2(flat[i], flat[i + 1])); return a; };
+  const shape = new THREE.Shape(pts(p.loops[0]));
+  for (const h of p.loops.slice(1)) shape.holes.push(new THREE.Path(pts(h)));
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: T, bevelEnabled: false, curveSegments: 1 });
+  geo.translate(0, 0, -T / 2);
+  const mesh = new THREE.Mesh(geo, wood);
+  mesh.castShadow = mesh.receiveShadow = true;
+  mesh.matrixAutoUpdate = false;
+  const base = new THREE.Matrix4().fromArray(p.m);
+  mesh.matrix.copy(base);
+  mesh.userData = { p, base };
+  world.add(mesh);
+  pieces.push(mesh);
+}
+// build order: groups in sequence, ribs sweep round each module (same as the video)
+const seq = pieces.map((m, i) => i).sort((a, b) => {
+  const A = pieces[a].userData.p, B = pieces[b].userData.p;
+  if (GI[A.group] !== GI[B.group]) return GI[A.group] - GI[B.group];
+  const ang = (q) => Math.atan2(q.m[1], q.m[0]);
+  if (A.group === "BODY" && A.label[4] !== B.label[4]) return A.label[4] < B.label[4] ? -1 : 1;
+  return A.group === "BODY" ? ang(A) - ang(B) : a - b;
+});
+const byGroup = {};
+seq.forEach((i) => (byGroup[pieces[i].userData.p.group] ??= []).push(i));
+for (const g in byGroup) byGroup[g].forEach((i, k, arr) => (pieces[i].userData.slot = [GI[g], k / Math.max(arr.length, 1)]));
+
+// ---------------------------------------------------------------- upholstery
+const shells = new THREE.Group();
+for (const s of D.upholstery) {
+  const rows = s.rows, n = rows[0].length, pos = [], idx = [];
+  rows.forEach((r) => r.forEach((v) => pos.push(...v)));
+  for (let i = 0; i < rows.length - 1; i++) for (let j = 0; j < n; j++) {
+    const k = (j + 1) % n, a = i * n + j, b = i * n + k, c = (i + 1) * n + k, d = (i + 1) * n + j;
+    idx.push(a, b, c, a, c, d);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  const m = new THREE.Mesh(g, fabric[s.tone]);
+  m.castShadow = m.receiveShadow = true;
+  shells.add(m);
+}
+world.add(shells);
+
+// ---------------------------------------------------------------- annotations
+const find = (label) => pieces.find((m) => m.userData.p.label === label);
+const anchor = (mesh, dz = 0) => {
+  const bb = new THREE.Box3().setFromBufferAttribute(mesh.geometry.attributes.position).applyMatrix4(mesh.userData.base);
+  return new THREE.Vector3((bb.min.x + bb.max.x) / 2, (bb.min.y + bb.max.y) / 2, bb.max.z + dz);
+};
+const ANN = [
+  ["BASE-RING-R", 0, "حلقة القاعدة", "BASE-RING · 30 loops", 0],
+  ["RIB-RD", 0, "52 ضلع · تعشيق 19 × 41", "tab 40 mm · relief R3.2", 1],
+  ["SEAT-RING-L", 0, "حلقة القعدة على 330 ملم", "SEAT-RING · webbing", 2],
+  ["PEBBLE-BR-PLATE", 0, "قاعدة الوسادة", "screwed + glued", 3],
+  ["PEBBLE-BR-SPINE", 30, "العمود الفقري", "egg-crate over 6 ribs", 5],
+  ["PEBBLE-AR-RIB1", 40, "قبة الذراع", "PEB_E 2.6 dome", 4],
+];
+const anns = ANN.map(([lab, dz, ar, en, stage]) => {
+  const m = find(lab); if (!m) return null;
+  const el = document.createElement("div"); el.className = "ann";
+  el.innerHTML = `${ar}<small>${en}</small>`;
+  const o = new CSS2DObject(el); o.position.copy(anchor(m, dz)); world.add(o);
+  return { o, stage, m };
+}).filter(Boolean);
+
+// dimensions from the actual geometry
+const full = new THREE.Box3();
+pieces.forEach((m) => full.union(new THREE.Box3().setFromBufferAttribute(m.geometry.attributes.position).applyMatrix4(m.userData.base)));
+const dims = new THREE.Group();
+{
+  const { min, max } = full, mat = new THREE.LineBasicMaterial({ color: css("--accent") || "#c4562a" });
+  const line = (a, b) => dims.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([a, b]), mat));
+  const tag = (txt, p) => { const el = document.createElement("div"); el.className = "dim"; el.textContent = txt; const o = new CSS2DObject(el); o.position.copy(p); dims.add(o); };
+  const y0 = min.y - 120, x1 = max.x + 120;
+  line(new THREE.Vector3(min.x, y0, 0), new THREE.Vector3(max.x, y0, 0));
+  tag(`${Math.round(max.x - min.x)} mm`, new THREE.Vector3((min.x + max.x) / 2, y0, 0));
+  line(new THREE.Vector3(x1, min.y, 0), new THREE.Vector3(x1, max.y, 0));
+  tag(`${Math.round(max.y - min.y)} mm`, new THREE.Vector3(x1, (min.y + max.y) / 2, 0));
+  line(new THREE.Vector3(x1, min.y, 0), new THREE.Vector3(x1, min.y, max.z));
+  tag(`${Math.round(max.z)} mm`, new THREE.Vector3(x1, min.y, max.z / 2));
+  dims.visible = false;
+  world.add(dims);
+}
+
+// ---------------------------------------------------------------- state
+const S = { s: 7, playing: false, explode: 0, explodeT: 0, xray: false, labels: true, section: false, dusk: false, pick: null };
+const ease = (t) => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 3);
+const tmp = new THREE.Matrix4();
+
+function applyBuild() {
+  let placed = 0;
+  for (const m of pieces) {
+    const [gi, f] = m.userData.slot;
+    const t = (S.s - gi - f * 0.6) / 0.4;           // each group fills its stage step, staggered
+    const visible = t > 0;
+    const lift = 520 * (1 - ease(t)) + EXPLODE[m.userData.p.group] * S.explode;
+    m.visible = visible;
+    tmp.makeTranslation(0, 0, lift).multiply(m.userData.base);
+    m.matrix.copy(tmp);
+    m.matrixWorldNeedsUpdate = true;
+    m.material = m === S.pick ? picked : (t > 0 && t < 1.15 ? hot : wood);
+    if (t >= 1) placed++;
+  }
+  const fin = Math.min(Math.max(S.s - 6, 0), 1);
+  shells.visible = fin > 0.001 && S.explode < 0.05;
+  for (const k in fabric) {
+    const ghost = S.xray || S.section;               // a section shows the frame inside the cushions
+    fabric[k].opacity = (ghost ? 0.22 : 1) * ease(fin);
+    fabric[k].depthWrite = !ghost && fin > 0.99;
+  }
+  const st = Math.min(Math.floor(S.s), 6);
+  const stg = STAGES[st];
+  $("stStep").textContent = `STEP ${String(st + 1).padStart(2, "0")} / 07 · ${stg.en}`;
+  $("stTitle").textContent = stg.ar;
+  $("stText").textContent = stg.t;
+  $("stPlaced").textContent = placed;
+  [...$("marks").children].forEach((el, i) => el.classList.toggle("on", i <= st));
+  for (const a of anns) a.o.visible = S.labels && S.s >= a.stage + 0.6 && !(fin > 0.5 && !S.xray && !S.section);
+  $("scrub").value = S.s;
+}
+
+// timeline marks
+STAGES.forEach((s, i) => {
+  const el = document.createElement("span");
+  el.innerHTML = `<b>${String(i + 1).padStart(2, "0")}</b> ${s.en}`;
+  el.title = s.ar;
+  el.addEventListener("click", () => { S.playing = false; tween("s", i + 1); });
+  $("marks").appendChild(el);
+});
+
+// ---------------------------------------------------------------- camera presets
+// hero distance fits the 3.1 m sofa to the screen width (phones get pulled back);
+// on wide screens the target slides right so the stage card does not cover the sofa.
+function heroView() {
+  const a = innerWidth / innerHeight, vf = THREE.MathUtils.degToRad(38);
+  const hf = 2 * Math.atan(Math.tan(vf / 2) * a);
+  const need = Math.max(3.5 / 2 / Math.tan(hf / 2), 1.5 / 2 / Math.tan(vf / 2));
+  const dir = new THREE.Vector3(-1.6, 1.25, 3.9).normalize();
+  const dx = innerWidth >= 720 ? 0.45 : 0;
+  const at = new THREE.Vector3(dx, 0.3, 0);
+  return { pos: dir.multiplyScalar(Math.max(4.4, need * 1.08)).add(at).toArray(), at: at.toArray() };
+}
+const VIEWS = { hero: heroView(), top: { pos: [0, 5.6, 0.01], at: [0, 0, 0] } };
+let camTween = null;
+function view(name) {
+  if (name === "hero") VIEWS.hero = heroView();
+  const v = VIEWS[name];
+  camTween = { t: 0, from: camera.position.clone(), to: new THREE.Vector3(...v.pos), af: controls.target.clone(), at: new THREE.Vector3(...v.at) };
+}
+camera.position.set(...VIEWS.hero.pos); controls.target.set(...VIEWS.hero.at);
+
+const tweens = {};
+function tween(key, to, dur = 0.9) { tweens[key] = { from: S[key], to, t: 0, dur }; }
+
+// ---------------------------------------------------------------- controls
+const toggle = (id, key, fn) => $(id).addEventListener("click", () => {
+  S[key] = !S[key]; $(id).setAttribute("aria-pressed", S[key]); fn?.(S[key]);
+});
+$("mHero").addEventListener("click", () => view("hero"));
+$("mTop").addEventListener("click", () => view("top"));
+toggle("mExplode", "explodeOn", (on) => tween("explode", on ? 1 : 0));
+toggle("mXray", "xray", (on) => { if (on && S.s < 7) tween("s", 7); });
+toggle("mLabels", "labels");
+toggle("mDims", "dimsOn", (on) => (dims.visible = on));
+toggle("mSection", "section", (on) => {
+  clip.length = 0; if (on) clip.push(section);
+  [wood, hot, picked, fabric.beige, fabric.grey].forEach((m) => (m.needsUpdate = true));
+  $("sectionCtl").hidden = !on;
+});
+toggle("mDusk", "dusk", (on) => applyLook());
+$("scrub").addEventListener("input", (e) => { S.playing = false; delete tweens.s; S.s = +e.target.value; setPlay(); });
+function setPlay() { $("play").textContent = S.playing ? "❚❚" : "▶"; $("play").setAttribute("aria-label", S.playing ? "أوقف" : "شغّل التركيب"); }
+$("play").addEventListener("click", () => { if (!S.playing && S.s >= 6.99) S.s = 0; S.playing = !S.playing; setPlay(); });
+
+// picking
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+let down = null;
+renderer.domElement.addEventListener("pointerdown", (e) => (down = [e.clientX, e.clientY]));
+renderer.domElement.addEventListener("pointerup", (e) => {
+  if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) return;
+  ndc.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const hit = ray.intersectObjects(pieces.filter((m) => m.visible), false)
+    .find((h) => !S.section || section.distanceToPoint(h.point) > 0);
+  S.pick = hit ? hit.object : null;
+  if (S.pick) {
+    const p = S.pick.userData.p;
+    $("pick").innerHTML = `<div class="id">P${String(p.n).padStart(2, "0")} · ${p.label} · ${p.k}/${p.of}</div><div class="note">${p.group} · ${p.note}</div>`;
+  } else $("pick").innerHTML = `<span style="color:var(--muted);font-size:12px">اضغط على أي قطعة باش تشوف اسمها</span>`;
+});
+
+// ---------------------------------------------------------------- look
+function applyLook() {
+  const th = document.documentElement.dataset.theme;
+  const dark = th === "dark" || (th !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+  const bg = new THREE.Color(S.dusk ? "#1d1a24" : (css("--bg") || "#e4e7e8"));
+  scene.background = bg;
+  floor.material.color.copy(S.dusk ? new THREE.Color("#2b2730") : bg.clone().multiplyScalar(dark ? 1.25 : 0.93));
+  hemi.intensity = S.dusk ? 0.35 : (dark ? 0.8 : 1.1);
+  hemi.color.set(S.dusk ? 0x6a6fa8 : 0xffffff);
+  sun.color.set(S.dusk ? 0xffa060 : 0xffffff);
+  sun.intensity = S.dusk ? 3.2 : 2.4;
+  sun.position.set(S.dusk ? 4.5 : 2.5, S.dusk ? 1.3 : 4.2, S.dusk ? 1.5 : 3.2);
+  fill.intensity = S.dusk ? 0.25 : 0.6;
+  hot.color.set(css("--accent") || "#c4562a");
+}
+applyLook();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyLook);
+new MutationObserver(applyLook).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+addEventListener("resize", () => {
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight); labels.setSize(innerWidth, innerHeight);
+});
+
+// ---------------------------------------------------------------- loop
+const clock = new THREE.Clock();
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  if (S.playing) { S.s = Math.min(S.s + dt * 0.55, 7); if (S.s >= 7) { S.playing = false; setPlay(); } }
+  for (const k in tweens) {
+    const tw = tweens[k]; tw.t += dt / (reduce ? 0.01 : tw.dur);
+    S[k] = THREE.MathUtils.lerp(tw.from, tw.to, ease(tw.t)); if (tw.t >= 1) delete tweens[k];
+  }
+  if (camTween) {
+    camTween.t += dt / (reduce ? 0.01 : 1.1); const e = ease(camTween.t);
+    camera.position.lerpVectors(camTween.from, camTween.to, e); controls.target.lerpVectors(camTween.af, camTween.at, e);
+    if (camTween.t >= 1) camTween = null;
+  }
+  // section plane follows the view: it cuts perpendicular to the camera's horizontal line of sight
+  if (S.section) {
+    const dir = new THREE.Vector3().subVectors(controls.target, camera.position).setY(0).normalize();
+    const c = THREE.MathUtils.lerp(-0.62, 0.62, +$("secPos").value);
+    section.normal.copy(dir); section.constant = -(c + dir.dot(controls.target));
+  }
+  applyBuild();
+  controls.update();
+  renderer.render(scene, camera);
+  labels.render(scene, camera);
+});
+window.__pebble = { S, pieces, renderer };
+</script>

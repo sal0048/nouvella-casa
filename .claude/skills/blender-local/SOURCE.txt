@@ -1,0 +1,1 @@
+Source: https://github.com/roble3/cc-blender-skill @11016c9 (MIT), plugin/skills/* (29 skills). Written for blender-mcp; see .claude/skills/blender-local for the headless bpy mapping.

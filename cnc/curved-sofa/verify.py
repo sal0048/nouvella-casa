@@ -11,6 +11,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ezdxf
 from shapely.geometry import Polygon
 
+import joints as J
+import labels as B
 import sofa_geometry as G
 import sofa_layout as L
 
@@ -42,13 +44,17 @@ def main() -> int:
 
     print("\n[2] parts do not overlap on the sheets")
     for n, placements in enumerate(sheets, 1):
-        polys = [(p.label, Polygon(L.flatten_loop(p.loops[0]))) for p in placements]
+        polys = [(p.label, B.material(p.loops)) for p in placements]
         bad = 0
+        close = 0.0
         for i in range(len(polys)):
             for j in range(i + 1, len(polys)):
                 if polys[i][1].intersects(polys[j][1]):
                     bad += 1
+                close = min(close or 1e9, polys[i][1].distance(polys[j][1]))
         check(bad == 0, f"sheet {n}: {len(placements)} parts, {bad} overlaps")
+        check(close >= G.PART_GAP - 0.05,
+              f"sheet {n}: closest parts {close:.1f} mm apart (>= {G.PART_GAP:.0f})")
         for p in placements:
             inside = (p.x >= G.SHEET_MARGIN - 1e-6
                       and p.y >= G.SHEET_MARGIN - 1e-6
@@ -56,7 +62,7 @@ def main() -> int:
                       and p.y + p.h <= G.SHEET_H - G.SHEET_MARGIN + 1e-6)
             if not inside:
                 check(False, f"sheet {n}: {p.label} {p.instance} outside the margin")
-        check(True, f"sheet {n}: every part inside the 15 mm sheet margin")
+        check(True, f"sheet {n}: every part inside the {G.SHEET_MARGIN:.0f} mm sheet margin")
 
     print("\n[3] requested dimensions")
     rib = next(p for p in parts if p.key == "RIB")
@@ -86,11 +92,50 @@ def main() -> int:
 
     print("\n[5] slot fit")
     check(abs(G.SLOT_T - 15.4) < 1e-9, f"every plate slot = {G.SLOT_T} mm for {G.T} mm ply")
-    check(G.DOGBONE_R * 2 < G.SLOT_T, f"dogbone relief R{G.DOGBONE_R} fits a {G.SLOT_T} mm slot")
+    check(G.DOGBONE_R * 2 < G.SLOT_T, f"dogbone relief R{G.DOGBONE_R:.1f} fits a {G.SLOT_T} mm slot")
+    check(G.DOGBONE_R > G.JOINT.tool_d / 2.0,
+          f"relief R{G.DOGBONE_R:.1f} clears a {G.JOINT.tool_d:.0f} mm cutter")
+
+    print("\n[6] corner relief (a round cutter cannot cut a square inside corner)")
+    for part in parts:
+        _, left = J.relieve_inside_corners(part.loops[0], G.DOGBONE_R)
+        check(left == 0, f"{part.num:02d} {part.label}: {part.relieved} inside corners "
+                         f"relieved, {left} square corners left")
+    r_tool = G.JOINT.tool_d / 2.0
+    for part in parts:
+        # a round bit of radius r can only produce the morphological closing
+        # of the part; anything the closing adds is material it leaves behind
+        solid = B.material(part.loops)
+        made = solid.buffer(r_tool, quad_segs=32).buffer(-r_tool, quad_segs=32)
+        # one unrelieved square corner leaves (1 - pi/4) r^2 = 1.93 mm2 by
+        # itself; judge the worst single spot, not the sum of curve-fit noise
+        uncut = made.difference(solid)
+        worst = max((g.area for g in getattr(uncut, "geoms", [uncut])), default=0.0)
+        check(worst < 0.5, f"{part.num:02d} {part.label}: worst spot a "
+                           f"{G.JOINT.tool_d:.0f} mm cutter cannot reach {worst:.2f} mm2")
+
+    print("\n[7] engrave labels: one per piece, fully on material")
+    labelled = B.all_labels(parts, sheets)
+    placed = [lab for sheet in labelled for _, lab in sheet]
+    check(all(lab is not None for lab in placed),
+          f"{sum(lab is not None for lab in placed)}/{len(placed)} pieces carry a label")
+    for sheet in labelled:
+        for p, lab in sheet:
+            if lab is None:
+                continue
+            safe = B.material(p.loops).buffer(-B.EDGE_CLEAR + 0.01)
+            if not safe.contains(lab.box()):
+                check(False, f"{lab.text} runs off the material")
+    check(True, f"every label keeps {B.EDGE_CLEAR:.0f} mm clear of the cut")
+    nums = [p.num for p in parts]
+    check(nums == list(range(1, len(parts) + 1)), f"part numbers 01-{len(parts):02d}, no gaps")
+    msp_labels = msp.query('TEXT[layer=="ENGRAVE-LABEL"]')
+    check(len(msp_labels) == len(placed),
+          f"{len(msp_labels)} ENGRAVE-LABEL texts in the DXF (expected {len(placed)})")
 
     area = sum(L.part_area(p.loops) * p.qty for p in parts)
     cutlen = sum(L.cut_length(p.loops) * p.qty for p in parts)
-    print(f"\n[6] material: {area/1e6:.2f} m2 of parts on {len(sheets)} sheets "
+    print(f"\n[8] material: {area/1e6:.2f} m2 of parts on {len(sheets)} sheets "
           f"({area/1e6/(len(sheets)*2.44*1.22)*100:.0f}% of sheet area), "
           f"cut path {cutlen/1000:.0f} m, "
           f"frame mass ~{area/1e6*G.T/1000*600:.0f} kg at 600 kg/m3")

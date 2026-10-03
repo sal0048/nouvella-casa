@@ -1,0 +1,344 @@
+{
+  "product": "ROUND_TUB_ARMCHAIR",
+  "status": "CAD_COMPLETE_NOT_VALIDATED",
+  "status_reason": "all automated checks pass, but CNC_BIT_DIAMETER and MATERIAL_THICKNESS are unconfirmed and change the cut geometry",
+  "physical_test": "NOT_PERFORMED",
+  "fit": "UNTESTED_FIT",
+  "checks_passed": 63,
+  "checks_failed": 0,
+  "checks": [
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "01 BASE-RING: 22 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "02 SEAT-RING: 35 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "03 BODY-RIB-A: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "04 BODY-RIB-B: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "05 BODY-RIB-C: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "06 BODY-RIB-D: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "07 BODY-RIB-E: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "08 BACK-RIB-A: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "09 BACK-RIB-B: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "10 BACK-RIB-C: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "11 BACK-RIB-D: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "12 BACK-RIB-E: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "13 BACK-RIB-F: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "14 BACK-RIB-G: 1 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "15 BACK-BAND-1: 5 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "16 BACK-BAND-2: 6 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[1] part topology",
+      "passed": true,
+      "message": "17 BACK-BAND-3: 5 loops, simple, holes inside and apart"
+    },
+    {
+      "section": "[2] every tab has its mortise (same angle, same radial span)",
+      "passed": true,
+      "message": "base ring: 20/20 body-rib mortises"
+    },
+    {
+      "section": "[2] every tab has its mortise (same angle, same radial span)",
+      "passed": true,
+      "message": "seat ring: 33/33 rib mortises"
+    },
+    {
+      "section": "[2] every tab has its mortise (same angle, same radial span)",
+      "passed": true,
+      "message": "BODY-RIB-A: bottom tab 350.2-390.2 matches its mortise"
+    },
+    {
+      "section": "[2] every tab has its mortise (same angle, same radial span)",
+      "passed": true,
+      "message": "BODY-RIB-B: bottom tab 367.0-407.0 matches its mortise"
+    },
+    {
+      "section": "[2] every tab has its mortise (same angle, same radial span)",
+      "passed": true,
+      "message": "BODY-RIB-C: bottom tab 373.3-413.3 matches its mortise"
+    },
+    {
+      "section": "[2] every tab has its mortise (same angle, same radial span)",
+      "passed": true,
+      "message": "BODY-RIB-D: bottom tab 357.4-397.4 matches its mortise"
+    },
+    {
+      "section": "[2] every tab has its mortise (same angle, same radial span)",
+      "passed": true,
+      "message": "BODY-RIB-E: bottom tab 337.4-377.4 matches its mortise"
+    },
+    {
+      "section": "[2] every tab has its mortise (same angle, same radial span)",
+      "passed": true,
+      "message": "back bands carry 13 rib slots for 13 back ribs"
+    },
+    {
+      "section": "[2] every tab has its mortise (same angle, same radial span)",
+      "passed": true,
+      "message": "every back rib rises at least 20 mm above the band"
+    },
+    {
+      "section": "[3] slot sizes (Tokyo rule: 19 x 41 for 18 mm board)",
+      "passed": true,
+      "message": "mortise 41 x 19 mm for 18 mm board"
+    },
+    {
+      "section": "[3] slot sizes (Tokyo rule: 19 x 41 for 18 mm board)",
+      "passed": true,
+      "message": "relief R3.2 clears a 6 mm cutter"
+    },
+    {
+      "section": "[4] corner relief and cutter reach",
+      "passed": true,
+      "message": "01 BASE-RING: 0 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[4] corner relief and cutter reach",
+      "passed": true,
+      "message": "02 SEAT-RING: 0 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[4] corner relief and cutter reach",
+      "passed": true,
+      "message": "03 BODY-RIB-A: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[4] corner relief and cutter reach",
+      "passed": true,
+      "message": "04 BODY-RIB-B: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[4] corner relief and cutter reach",
+      "passed": true,
+      "message": "05 BODY-RIB-C: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[4] corner relief and cutter reach",
+      "passed": true,
+      "message": "06 BODY-RIB-D: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[4] corner relief and cutter reach",
+      "passed": true,
+      "message": "07 BODY-RIB-E: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[4] corner relief and cutter reach",
+      "passed": true,
+      "message": "08 BACK-RIB-A: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[4] corner relief and cutter reach",
+      "passed": true,
+      "message": "09 BACK-RIB-B: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[4] corner relief and cutter reach",
+      "passed": true,
+      "message": "10 BACK-RIB-C: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[4] corner relief and cutter reach",
+      "passed": true,
+      "message": "11 BACK-RIB-D: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[4] corner relief and cutter reach",
+      "passed": true,
+      "message": "12 BACK-RIB-E: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[4] corner relief and cutter reach",
+      "passed": true,
+      "message": "13 BACK-RIB-F: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[4] corner relief and cutter reach",
+      "passed": true,
+      "message": "14 BACK-RIB-G: 4 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[4] corner relief and cutter reach",
+      "passed": true,
+      "message": "15 BACK-BAND-1: 0 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[4] corner relief and cutter reach",
+      "passed": true,
+      "message": "16 BACK-BAND-2: 0 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[4] corner relief and cutter reach",
+      "passed": true,
+      "message": "17 BACK-BAND-3: 0 corners relieved, worst spot a 6 mm bit cannot reach 0.00 mm2"
+    },
+    {
+      "section": "[5] nesting",
+      "passed": true,
+      "message": "sheet 1: 28 parts, closest 12.9 mm apart, all inside the 9 mm edge"
+    },
+    {
+      "section": "[5] nesting",
+      "passed": true,
+      "message": "sheet 2: 10 parts, closest 13.3 mm apart, all inside the 9 mm edge"
+    },
+    {
+      "section": "[5] nesting",
+      "passed": true,
+      "message": "every part placed its full quantity (38 pieces)"
+    },
+    {
+      "section": "[6] labels",
+      "passed": true,
+      "message": "38 pieces labelled"
+    },
+    {
+      "section": "[6] labels",
+      "passed": true,
+      "message": "every label sits on material, 4 mm from any cut"
+    },
+    {
+      "section": "[7] built DXF",
+      "passed": true,
+      "message": "units = mm"
+    },
+    {
+      "section": "[7] built DXF",
+      "passed": true,
+      "message": "106 closed CUT profiles (expected 106)"
+    },
+    {
+      "section": "[7] built DXF",
+      "passed": true,
+      "message": "38 ENGRAVE-LABEL texts"
+    },
+    {
+      "section": "[8] DXF hygiene, scale and cutter compatibility",
+      "passed": true,
+      "message": "no duplicate CUT profiles (0 found)"
+    },
+    {
+      "section": "[8] DXF hygiene, scale and cutter compatibility",
+      "passed": true,
+      "message": "scale 1:1 (base ring 817.0 mm in model and in the DXF)"
+    },
+    {
+      "section": "[8] DXF hygiene, scale and cutter compatibility",
+      "passed": true,
+      "message": "narrowest internal feature 19 mm > 6 mm cutter + 1 mm"
+    },
+    {
+      "section": "[8] DXF hygiene, scale and cutter compatibility",
+      "passed": true,
+      "message": "thinnest ring web beside a mortise 16.5 mm (>= 12 mm)"
+    },
+    {
+      "section": "[8] DXF hygiene, scale and cutter compatibility",
+      "passed": true,
+      "message": "mirrored rib positions share one profile (plan symmetric in X and Y)"
+    },
+    {
+      "section": "[3D-1] interference",
+      "passed": true,
+      "message": "88 neighbouring pairs, 0 interpenetrate"
+    },
+    {
+      "section": "[3D-2] load path: every rib bears on what carries it",
+      "passed": true,
+      "message": "20/20 body ribs touch both rings"
+    },
+    {
+      "section": "[3D-2] load path: every rib bears on what carries it",
+      "passed": true,
+      "message": "13/13 back ribs touch the seat ring and a band"
+    },
+    {
+      "section": "[3D-2] load path: every rib bears on what carries it",
+      "passed": true,
+      "message": "3/3 bands rest on back ribs"
+    },
+    {
+      "section": "[3D-3] overall size",
+      "passed": true,
+      "message": "frame 953.5 x 922.8 x 800.0 mm, standing on z = 0"
+    }
+  ],
+  "open_inputs": [
+    {
+      "parameter": "CNC_BIT_DIAMETER",
+      "question": "What cutter diameter will cut this job? (dogbones assume 6 mm)"
+    },
+    {
+      "parameter": "MATERIAL_THICKNESS",
+      "question": "Caliper the real sheet in 3 places (nominal 18 mm)."
+    },
+    {
+      "parameter": "SHEET_SIZE",
+      "question": "Confirm the sheet size from your supplier (2440 x 1220 assumed)."
+    },
+    {
+      "parameter": "OVERALL_DIMENSIONS",
+      "question": "Confirm or change 950 x 920 x 800 mm, seat frame 330, arms 600."
+    }
+  ]
+}

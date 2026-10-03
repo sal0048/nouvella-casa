@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.patches import Polygon as MplPolygon
 
+import labels as B
 import sofa_geometry as G
 import sofa_layout as L
 
@@ -94,7 +95,8 @@ def page_spec(pdf, parts, sheets):
         ("Total cut path", f"{total_cut/1000:.0f} m"),
         ("Frame mass (600 kg/m3)", f"~{total_area/1e6*G.T/1000*600:.0f} kg"),
         ("Joint clearance", f"slots {G.SLOT_T:.1f} mm for {G.T:.0f} mm plate"),
-        ("Corner relief", f"dogbone R{G.DOGBONE_R:.1f} mm (6 mm cutter)"),
+        ("Corner relief", f"dogbone R{G.DOGBONE_R:.1f} mm in every inside corner "
+                          f"({G.JOINT.tool_d:.0f} mm cutter)"),
     ]
 
     y = 0.855
@@ -105,6 +107,7 @@ def page_spec(pdf, parts, sheets):
         y -= 0.0235
 
     fig.text(0.520, 0.885, "BILL OF MATERIALS", fontsize=10, fontweight="bold", color=INK)
+    fig.text(0.500, 0.860, "#", fontsize=7.6, color=REF, fontweight="bold")
     fig.text(0.520, 0.860, "PART", fontsize=7.6, color=REF, fontweight="bold")
     fig.text(0.652, 0.860, "QTY", fontsize=7.6, color=REF, fontweight="bold")
     fig.text(0.692, 0.860, "SIZE (mm)", fontsize=7.6, color=REF, fontweight="bold")
@@ -112,6 +115,7 @@ def page_spec(pdf, parts, sheets):
     y = 0.836
     for part in parts:
         b = L.loops_bbox(part.loops)
+        fig.text(0.500, y, f"{part.num:02d}", fontsize=8.2, color=ACCENT, fontweight="bold")
         fig.text(0.520, y, part.label, fontsize=8.2, color=INK)
         fig.text(0.656, y, str(part.qty), fontsize=8.2, color=INK)
         fig.text(0.692, y, f"{b[2]-b[0]:.0f} x {b[3]-b[1]:.0f}", fontsize=8.2, color=INK)
@@ -225,7 +229,7 @@ def page_assembly(pdf, parts):
     plt.close(fig)
 
 
-def page_sheet(pdf, index, total, placements):
+def page_sheet(pdf, index, total, placements, labelled, by_key):
     counts = Counter(p.label for p in placements)
     note = ", ".join(f"{k} x{v}" for k, v in sorted(counts.items()))
     fig = _page(f"{index + 2}  -  NESTING SHEET {index + 1} OF {total}", note)
@@ -243,11 +247,14 @@ def page_sheet(pdf, index, total, placements):
 
     for p in placements:
         draw_loops(ax, p.loops)
-        label = p.label if counts[p.label] == 1 and p.instance == 1 else \
-            f"{p.label}\n{p.instance}"
-        ax.text(p.x + p.w / 2, p.y + p.h / 2, label, fontsize=7.2, color=INK,
+    for p, lab in labelled:
+        part = by_key[p.key]
+        text = f"{part.num:02d}" if part.qty == 1 else f"{part.num:02d}.{p.instance}"
+        x, y = (lab.x, lab.y) if lab else (p.x + p.w / 2, p.y + p.h / 2)
+        ax.text(x, y, text, fontsize=7.6, color=INK, fontweight="bold",
                 ha="center", va="center", zorder=8,
-                bbox=dict(fc="white", ec=REF, lw=0.4, alpha=0.85, pad=1.6))
+                bbox=dict(fc="white", ec=ACCENT, lw=0.5, alpha=0.9, pad=1.4,
+                          boxstyle="circle"))
 
     dim_line(ax, (0, -95), (G.SHEET_W, -95), f"{G.SHEET_W:.0f}", off=18)
     dim_line(ax, (-95, 0), (-95, G.SHEET_H), f"{G.SHEET_H:.0f}", off=0)
@@ -260,13 +267,15 @@ def page_sheet(pdf, index, total, placements):
 
 def main() -> None:
     parts, sheets = L.layout()
+    by_key = {p.key: p for p in parts}
+    labelled = B.all_labels(parts, sheets)
     out = Path(__file__).resolve().parent / "out" / "curved-sofa-cutting-plan.pdf"
     out.parent.mkdir(parents=True, exist_ok=True)
     with PdfPages(out) as pdf:
         page_spec(pdf, parts, sheets)
         page_assembly(pdf, parts)
         for i, placements in enumerate(sheets):
-            page_sheet(pdf, i, len(sheets), placements)
+            page_sheet(pdf, i, len(sheets), placements, labelled[i], by_key)
         info = pdf.infodict()
         info["Title"] = "Curved 3-seat sofa - CNC cutting plan"
         info["Subject"] = SUBTITLE

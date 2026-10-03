@@ -1,0 +1,128 @@
+[
+  {
+    "name": "MATERIAL",
+    "value": "MDF",
+    "unit": "",
+    "status": "USER_CONFIRMED",
+    "note": "user works in MDF; the reference uses 15 mm plywood"
+  },
+  {
+    "name": "MATERIAL_THICKNESS",
+    "value": 18.0,
+    "unit": "mm",
+    "status": "USER_CONFIRMED",
+    "note": "NOMINAL - measure the real sheet (reference: 15 mm)"
+  },
+  {
+    "name": "CLEARANCE",
+    "value": 1.0,
+    "unit": "mm",
+    "status": "ADOPTED_FROM_TOKYO_PACK",
+    "note": "total across each slot - UNTESTED FIT"
+  },
+  {
+    "name": "SLOT_WIDTH",
+    "value": 19.0,
+    "unit": "mm",
+    "status": "DERIVED",
+    "note": "MATERIAL_THICKNESS + CLEARANCE"
+  },
+  {
+    "name": "TAB_LENGTH",
+    "value": 40.0,
+    "unit": "mm",
+    "status": "ADOPTED_FROM_TOKYO_PACK",
+    "note": ""
+  },
+  {
+    "name": "MORTISE_LENGTH",
+    "value": 41.0,
+    "unit": "mm",
+    "status": "DERIVED",
+    "note": "TAB_LENGTH + CLEARANCE"
+  },
+  {
+    "name": "CNC_BIT_DIAMETER",
+    "value": 6.0,
+    "unit": "mm",
+    "status": "ASSUMED_USER_INPUT_REQUIRED",
+    "note": "sizes every dogbone relief"
+  },
+  {
+    "name": "RELIEF_RADIUS",
+    "value": 3.2,
+    "unit": "mm",
+    "status": "DERIVED",
+    "note": "CNC_BIT_DIAMETER / 2 + 0.2"
+  },
+  {
+    "name": "SHEET_SIZE",
+    "value": "2440 x 1220",
+    "unit": "mm",
+    "status": "ASSUMED_USER_INPUT_REQUIRED",
+    "note": "confirm the supplier size"
+  },
+  {
+    "name": "PART_GAP",
+    "value": 10.0,
+    "unit": "mm",
+    "status": "ADOPTED_FROM_TOKYO_PACK",
+    "note": ""
+  },
+  {
+    "name": "OVERALL_WIDTH_FINISHED",
+    "value": 3100,
+    "unit": "mm",
+    "status": "FROM_REFERENCE_DRAWING",
+    "note": "1350 + 1750"
+  },
+  {
+    "name": "DEPTH_FINISHED",
+    "value": "1110 / 1130",
+    "unit": "mm",
+    "status": "FROM_REFERENCE_DRAWING",
+    "note": "left / right module"
+  },
+  {
+    "name": "SEAT_FRAME_HEIGHT",
+    "value": 330.0,
+    "unit": "mm",
+    "status": "DESIGN_CHOICE_UNCONFIRMED",
+    "note": "+ 100~120 mm foam = ~440"
+  },
+  {
+    "name": "BACK_PEBBLE_HEIGHT",
+    "value": "400 / 430",
+    "unit": "mm",
+    "status": "DESIGN_CHOICE_UNCONFIRMED",
+    "note": "dome above the plate, left / right"
+  },
+  {
+    "name": "ARM_PEBBLE_HEIGHT",
+    "value": "300 / 330",
+    "unit": "mm",
+    "status": "DESIGN_CHOICE_UNCONFIRMED",
+    "note": "end left / arm right"
+  },
+  {
+    "name": "PEBBLE_FOOTPRINTS",
+    "value": "1056x433, 403x386, 1215x495, 457x750",
+    "unit": "mm",
+    "status": "FROM_REFERENCE_DRAWING",
+    "note": "finished; frame = minus ~30 foam"
+  },
+  {
+    "name": "BODY_RIB_PITCH",
+    "value": 175.0,
+    "unit": "mm",
+    "status": "DESIGN_CHOICE_UNCONFIRMED",
+    "note": "along the belly"
+  },
+  {
+    "name": "SEAT_RING_BAND",
+    "value": 190.0,
+    "unit": "mm",
+    "status": "DESIGN_CHOICE_UNCONFIRMED",
+    "note": "elastic webbing across the opening"
+  }
+]

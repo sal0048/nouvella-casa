@@ -1,0 +1,396 @@
+[
+  {
+    "part_id": "P01",
+    "name": "BASE-RING",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 817.0,
+      "y": 791.2
+    },
+    "area_mm2": 234051.0,
+    "cutouts": 21,
+    "corners_relieved": 0,
+    "plan_angles_deg": [],
+    "band_span_deg": [],
+    "role": "floor ring",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P02",
+    "name": "SEAT-RING",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 913.5,
+      "y": 885.6
+    },
+    "area_mm2": 329775.9,
+    "cutouts": 34,
+    "corners_relieved": 0,
+    "plan_angles_deg": [],
+    "band_span_deg": [],
+    "role": "seat ring, ribs above and below",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P03",
+    "name": "BODY-RIB-A",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 137.08,
+      "y": 330.0
+    },
+    "area_mm2": 37199.1,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "plan_angles_deg": [
+      9.0,
+      171.0,
+      189.0,
+      351.0
+    ],
+    "band_span_deg": [],
+    "role": "body rib at 9, 171, 189, 351 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P04",
+    "name": "BODY-RIB-B",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 139.82,
+      "y": 330.0
+    },
+    "area_mm2": 37824.3,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "plan_angles_deg": [
+      27.0,
+      153.0,
+      207.0,
+      333.0
+    ],
+    "band_span_deg": [],
+    "role": "body rib at 27, 153, 207, 333 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P05",
+    "name": "BODY-RIB-C",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 140.84,
+      "y": 330.0
+    },
+    "area_mm2": 38057.4,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "plan_angles_deg": [
+      45.0,
+      135.0,
+      225.0,
+      315.0
+    ],
+    "band_span_deg": [],
+    "role": "body rib at 45, 135, 225, 315 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P06",
+    "name": "BODY-RIB-D",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 138.26,
+      "y": 330.0
+    },
+    "area_mm2": 37468.9,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "plan_angles_deg": [
+      63.0,
+      117.0,
+      243.0,
+      297.0
+    ],
+    "band_span_deg": [],
+    "role": "body rib at 63, 117, 243, 297 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P07",
+    "name": "BODY-RIB-E",
+    "quantity": 4,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 134.99,
+      "y": 330.0
+    },
+    "area_mm2": 36724.5,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "plan_angles_deg": [
+      81.0,
+      99.0,
+      261.0,
+      279.0
+    ],
+    "band_span_deg": [],
+    "role": "body rib at 81, 99, 261, 279 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P08",
+    "name": "BACK-RIB-A",
+    "quantity": 2,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 130.0,
+      "y": 288.0
+    },
+    "area_mm2": 33673.6,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "plan_angles_deg": [
+      -18.0,
+      198.0
+    ],
+    "band_span_deg": [],
+    "role": "back rib at -18, 198 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P09",
+    "name": "BACK-RIB-B",
+    "quantity": 2,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 130.0,
+      "y": 314.33
+    },
+    "area_mm2": 36570.4,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "plan_angles_deg": [
+      0.0,
+      180.0
+    ],
+    "band_span_deg": [],
+    "role": "back rib at 0, 180 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P10",
+    "name": "BACK-RIB-C",
+    "quantity": 2,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 130.0,
+      "y": 358.71
+    },
+    "area_mm2": 41451.8,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "plan_angles_deg": [
+      18.0,
+      162.0
+    ],
+    "band_span_deg": [],
+    "role": "back rib at 18, 162 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P11",
+    "name": "BACK-RIB-D",
+    "quantity": 2,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 130.0,
+      "y": 406.92
+    },
+    "area_mm2": 46754.9,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "plan_angles_deg": [
+      36.0,
+      144.0
+    ],
+    "band_span_deg": [],
+    "role": "back rib at 36, 144 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P12",
+    "name": "BACK-RIB-E",
+    "quantity": 2,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 130.0,
+      "y": 449.19
+    },
+    "area_mm2": 51404.0,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "plan_angles_deg": [
+      54.0,
+      126.0
+    ],
+    "band_span_deg": [],
+    "role": "back rib at 54, 126 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P13",
+    "name": "BACK-RIB-F",
+    "quantity": 2,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 130.0,
+      "y": 477.87
+    },
+    "area_mm2": 54558.8,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "plan_angles_deg": [
+      72.0,
+      108.0
+    ],
+    "band_span_deg": [],
+    "role": "back rib at 72, 108 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P14",
+    "name": "BACK-RIB-G",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 130.0,
+      "y": 488.0
+    },
+    "area_mm2": 55673.6,
+    "cutouts": 0,
+    "corners_relieved": 4,
+    "plan_angles_deg": [
+      90.0
+    ],
+    "band_span_deg": [],
+    "role": "back rib at 90 deg",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P15",
+    "name": "BACK-BAND-1",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 232.26,
+      "y": 584.15
+    },
+    "area_mm2": 73691.5,
+    "cutouts": 4,
+    "corners_relieved": 0,
+    "plan_angles_deg": [],
+    "band_span_deg": [
+      -27.0,
+      45.0
+    ],
+    "role": "drops over the back rib tops onto the shoulders",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P16",
+    "name": "BACK-BAND-2",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 715.25,
+      "y": 218.31
+    },
+    "area_mm2": 90272.5,
+    "cutouts": 5,
+    "corners_relieved": 0,
+    "plan_angles_deg": [],
+    "band_span_deg": [
+      45.0,
+      135.0
+    ],
+    "role": "drops over the back rib tops onto the shoulders",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  },
+  {
+    "part_id": "P17",
+    "name": "BACK-BAND-3",
+    "quantity": 1,
+    "material": "MDF",
+    "thickness_mm": 18.0,
+    "thickness_status": "NOMINAL_USER_CONFIRMED",
+    "flat_size_mm": {
+      "x": 232.26,
+      "y": 584.15
+    },
+    "area_mm2": 73691.5,
+    "cutouts": 4,
+    "corners_relieved": 0,
+    "plan_angles_deg": [],
+    "band_span_deg": [
+      135.0,
+      207.0
+    ],
+    "role": "drops over the back rib tops onto the shoulders",
+    "geometry_status": "PARAMETRIC_DESIGN_CHOICE",
+    "manufacturing_status": "UNTESTED_FIT"
+  }
+]
