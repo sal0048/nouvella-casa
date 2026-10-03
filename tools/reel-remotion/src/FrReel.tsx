@@ -13,18 +13,18 @@ const fonts = `
 
 // French captions; timings follow the original Arabic captions (seconds)
 const LINES: [number, number, string][] = [
-  [0.2, 3.95, 'Envie d’une table basse qui dure ?'],
-  [4.0, 6.35, 'Regardez de plus près'],
-  [6.4, 8.15, 'Plateau en porcelaine'],
-  [8.2, 10.35, 'Base 100 % bois de hêtre'],
-  [10.4, 12.45, 'Couleurs au choix, sur commande'],
-  [12.5, 14.15, 'Plusieurs formes disponibles'],
-  [14.2, 17.15, 'Livraison dans les 69 wilayas'],
-  [17.2, 18.6, 'Bienvenue à tous !'],
+  [0.2, 3.37, "Envie d’une table basse qui dure ?"],
+  [3.95, 6.35, "Regardez de plus près"],
+  [6.35, 8.58, "Plateau en porcelaine"],
+  [8.58, 11.15, "Base 100 % bois de hêtre"],
+  [11.15, 13.65, "Couleurs au choix, sur commande"],
+  [13.65, 16.18, "Plusieurs formes disponibles"],
+  [16.18, 19.4, "Livraison dans les 69 wilayas"],
+  [19.4, 21.85, "Bienvenue à tous !"],
 ];
 const FPS = 30;
 export const FR_DURATION = Math.round(37.85 * FPS);
-const BOX_START = 0.15, BOX_END = 18.7;
+const BOX_START = 0.15, BOX_END = 22.0;
 
 const Line: React.FC<{text: string; len: number}> = ({text, len}) => {
   const f = useCurrentFrame();
@@ -80,6 +80,6 @@ export const FrReel: React.FC = () => (
     <style>{fonts}</style>
     <OffthreadVideo src={staticFile('fr.mp4')} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} />
     <Sequence from={Math.round(BOX_START * FPS)} durationInFrames={Math.round((BOX_END - BOX_START) * FPS)}><CaptionBar /></Sequence>
-    <Sequence from={FR_DURATION - 120}><EndCta /></Sequence>
+    <Sequence from={Math.round(33.7 * FPS)}><EndCta /></Sequence>
   </AbsoluteFill>
 );

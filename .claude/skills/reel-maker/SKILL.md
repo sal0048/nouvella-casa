@@ -36,3 +36,11 @@ Always view stills before the full render: callout dots must sit ON the product.
 - Only true claims: never write a material (marble, solid wood), stock, delivery time or discount that Sal has not confirmed.
 - No music baked in: Sal adds a trending sound in Instagram (better reach).
 - Remotion license: free for companies with ≤3 employees; above that a company license is needed.
+
+## French voiceover (Kokoro, local, free)
+`pip install torch --index-url https://download.pytorch.org/whl/cpu && pip install kokoro soundfile` + `apt-get install espeak-ng`.
+Lines in `tools/reel-remotion/voice_fr_lines.txt` (`start|slot|text`), run `voice_fr.py` (voice `ff_siwis`).
+Write numbers in words and "wilayas" as `wi-la-ya` (else it sounds like "Williams").
+Check the result with faster-whisper (`small`, language fr), since nobody can listen here.
+Duck the music under the voice: `sidechaincompress=threshold=0.03:ratio=8`.
+Edge TTS (Microsoft) returns 403 from this environment; ElevenLabs needs `ELEVENLABS_API_KEY`.
