@@ -32,7 +32,7 @@ const Chrome: React.FC<{idx: number; dark: boolean}> = ({idx, dark}) => {
   const c = dark ? SAND : ESP;
   return (
     <>
-      <div style={{position: 'absolute', top: 54, left: 60}}><Logo color={c} scale={0.85} /></div>
+      
       <div style={{position: 'absolute', top: 66, right: 60, fontFamily: 'Mont', fontWeight: 500, fontSize: 24, color: c, opacity: 0.8, letterSpacing: 3}}>
         {String(idx + 1).padStart(2, '0')} / {String(SLIDES).padStart(2, '0')}
       </div>
@@ -74,7 +74,7 @@ export const NoyaSlide: React.FC<{model: string; idx: number}> = ({model, idx}) 
         <style>{fonts}</style>
         <div style={{display: 'flex', height: '100%', gap: 6}}>{half(m, 'TEAM 1')}{half(sib, 'TEAM 2')}</div>
         <div style={{position: 'absolute', top: 0, left: 0, right: 0, height: 330, background: 'linear-gradient(to bottom, rgba(28,22,18,0.92), rgba(0,0,0,0))'}} />
-        <div style={{position: 'absolute', top: 54, left: 60}}><Logo color={SAND} scale={0.85} /></div>
+        
         <div style={{position: 'absolute', top: 150, width: '100%', textAlign: 'center', fontFamily: 'Playfair', fontWeight: 600, fontSize: 64, color: SAND}}>Vous choisissez laquelle ?</div>
         <div style={{position: 'absolute', top: 560, left: '50%', transform: 'translateX(-50%)', width: 150, height: 150, borderRadius: 100, background: CLAY,
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Playfair', fontWeight: 600, fontSize: 56, color: ESP}}>ou</div>
@@ -178,8 +178,7 @@ export const NoyaSlide: React.FC<{model: string; idx: number}> = ({model, idx}) 
   } else {
     body = (
       <AbsoluteFill style={{background: ESP, justifyContent: 'center', alignItems: 'center', padding: '0 90px'}}>
-        <Logo color={SAND} scale={2.1} />
-        <div style={{width: 160, height: 3, background: CLAY, margin: '56px 0'}} />
+        <div style={{width: 160, height: 3, background: CLAY, margin: '0 0 56px'}} />
         <div style={{fontFamily: 'Playfair', fontWeight: 600, fontSize: 58, color: SAND, textAlign: 'center', lineHeight: 1.2, marginBottom: 44}}>
           Envie de {m.id} chez vous ?
         </div>

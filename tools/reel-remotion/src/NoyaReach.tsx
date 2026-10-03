@@ -29,7 +29,7 @@ const Chrome: React.FC<{idx: number; dark: boolean}> = ({idx, dark}) => {
   const c = dark ? SAND : ESP;
   return (
     <>
-      <div style={{position: 'absolute', top: 54, left: 60}}><Logo color={c} scale={0.85} /></div>
+      
       <div style={{position: 'absolute', top: 66, right: 60, fontFamily: 'Mont', fontWeight: 500, fontSize: 24, color: c, opacity: 0.8, letterSpacing: 3}}>
         {String(idx + 1).padStart(2, '0')} / {String(N).padStart(2, '0')}
       </div>
@@ -112,8 +112,7 @@ export const NoyaReach: React.FC<{model: string; idx: number}> = ({model, idx}) 
   } else {
     body = (
       <AbsoluteFill style={{background: ESP, justifyContent: 'center', alignItems: 'center', padding: '0 90px'}}>
-        <Logo color={SAND} scale={2.1} />
-        <div style={{width: 160, height: 3, background: CLAY, margin: '56px 0'}} />
+        <div style={{width: 160, height: 3, background: CLAY, margin: '0 0 56px'}} />
         {[['Enregistrez', 'ce post pour votre futur salon'], ['Partagez-le', `à ${m.share}`], ['Écrivez', `« ${m.id} » pour les tissus et les dimensions`]].map(([a, b], i) => (
           <div key={i} style={{display: 'flex', gap: 26, alignItems: 'baseline', marginBottom: 40, width: '100%'}}>
             <span style={{fontFamily: 'Playfair', fontWeight: 600, fontSize: 58, color: CLAY, width: 70}}>{i + 1}</span>
